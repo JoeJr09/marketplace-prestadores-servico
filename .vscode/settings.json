@@ -1,12 +1,3 @@
 {
-    "sqltools.connections": [
-        {
-            "ssh": "Disabled",
-            "previewLimit": 50,
-            "server": "localhost",
-            "driver": "PostgreSQL",
-            "name": "Marktplace",
-            "connectString": "postgresql://postgres.coxvyvybihhigdoecwyi:renanzinhogay@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
-        }
-    ]
+
 }
