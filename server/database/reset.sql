@@ -1,2 +1,0 @@
-DROP SCHEMA IF EXISTS acode_aqui CASCADE;
-CREATE SCHEMA acode_aqui;
