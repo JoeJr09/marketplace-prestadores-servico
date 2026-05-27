@@ -9,21 +9,32 @@ const REFRESH_SECRET =
 export function generateAccessToken(
   payload: object
 ) {
-  return jwt.sign(payload, ACCESS_SECRET, {
-    expiresIn: "15m",
-  });
+  return jwt.sign(
+    payload,
+    ACCESS_SECRET,
+    {
+      expiresIn: "15m",
+    }
+  );
 }
 
 export function generateRefreshToken(
   payload: object
 ) {
-  return jwt.sign(payload, REFRESH_SECRET, {
-    expiresIn: "7d",
-  });
+  return jwt.sign(
+    payload,
+    REFRESH_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 }
 
 export function verifyAccessToken(
   token: string
 ) {
-  return jwt.verify(token, ACCESS_SECRET);
+  return jwt.verify(
+    token,
+    ACCESS_SECRET
+  );
 }
