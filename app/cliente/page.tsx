@@ -1,3 +1,3 @@
 export default function AdminPage() {
-  return <h1>Área Admin</h1>;
+  return <h1>Área cliente</h1>;
 }
