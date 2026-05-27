@@ -1,41 +1,44 @@
-import { NextResponse } from "next/server";
-
-import { supabase } from "@/lib/supabase";
+import { NextResponse, type NextRequest } from "next/server";
 
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "@/lib/jwt";
+} from "@/app/lib/jwt";
 
-export async function POST(
-  req: Request
-) {
+interface LoginRequestBody {
+  email?: string;
+  password?: string;
+}
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body =
+      (await req.json()) as LoginRequestBody;
 
-    const {
-      email,
-      password,
-    } = body;
+    const { email, password } = body;
 
-    /**
-     * login supabase
-     */
-    const {
-      data,
-      error,
-    } =
-      await supabase.auth.signInWithPassword(
+    if (!email || !password) {
+      return NextResponse.json(
         {
-          email,
-          password,
+          error:
+            "Email e senha são obrigatórios",
+        },
+        {
+          status: 400,
         }
       );
+    }
 
-    if (
-      error ||
-      !data.user
-    ) {
+    const { supabase } =
+      await import("@/app/lib/supabase");
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (error || !data.user) {
       return NextResponse.json(
         {
           error:
@@ -47,9 +50,6 @@ export async function POST(
       );
     }
 
-    /**
-     * busca profile
-     */
     const {
       data: profile,
       error: profileError,
@@ -59,10 +59,7 @@ export async function POST(
       .eq("id", data.user.id)
       .single();
 
-    if (
-      profileError ||
-      !profile
-    ) {
+    if (profileError || !profile) {
       return NextResponse.json(
         {
           error:
@@ -74,49 +71,31 @@ export async function POST(
       );
     }
 
-    /**
-     * payload JWT
-     */
     const payload = {
       id: profile.id,
       email: profile.email,
       role: profile.role,
     };
 
-    /**
-     * gera tokens
-     */
     const accessToken =
-      generateAccessToken(
-        payload
-      );
+      generateAccessToken(payload);
 
     const refreshToken =
-      generateRefreshToken(
-        payload
-      );
+      generateRefreshToken(payload);
 
-    /**
-     * response
-     */
     const response =
       NextResponse.json({
-        message:
-          "Login realizado",
+        message: "Login realizado",
         user: profile,
       });
 
-    /**
-     * cookies
-     */
     response.cookies.set(
       "sb-access-token",
       accessToken,
       {
         httpOnly: true,
         secure:
-          process.env
-            .NODE_ENV ===
+          process.env.NODE_ENV ===
           "production",
         sameSite: "lax",
         path: "/",
@@ -130,21 +109,15 @@ export async function POST(
       {
         httpOnly: true,
         secure:
-          process.env
-            .NODE_ENV ===
+          process.env.NODE_ENV ===
           "production",
         sameSite: "lax",
         path: "/",
-        maxAge:
-          60 *
-          60 *
-          24 *
-          7,
+        maxAge: 60 * 60 * 24 * 7,
       }
     );
 
     return response;
-
   } catch (err) {
     console.error(err);
 
