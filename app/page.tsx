@@ -1,4 +1,4 @@
-import BotaoInicial from "@/components/BotaoInicial";
+import BotaoInicial from "@/components/e/BotaoInicial";
 
 export default function Home() {
   return (
