@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
+import { InputPhone } from "@/components/e/InputPhone";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -63,41 +64,6 @@ const passwordChecks = [
       value.length >= 8,
   },
 ] as const;
-
-function formatPhone(
-  value: string
-) {
-  const digits = value
-    .replace(/\D/g, "")
-    .slice(0, 11);
-
-  if (digits.length <= 2) {
-    return digits
-      ? `(${digits}`
-      : "";
-  }
-
-  const areaCode = digits.slice(0, 2);
-  const first = digits.slice(2, 3);
-  const middle = digits.slice(3, 7);
-  const end = digits.slice(7, 11);
-
-  let formatted = `(${areaCode})`;
-
-  if (first) {
-    formatted += ` ${first}`;
-  }
-
-  if (middle) {
-    formatted += ` ${middle}`;
-  }
-
-  if (end) {
-    formatted += `-${end}`;
-  }
-
-  return formatted;
-}
 
 function uniqueMessages(
   values: Array<string | undefined>
@@ -438,19 +404,15 @@ export default function RegisterPage() {
                   >
                     Phone number
                   </label>
-                  <Input
+                  <InputPhone
                     id="phone"
-                    type="tel"
                     autoComplete="tel"
                     placeholder="(85) 9 9888-9756"
-                    inputMode="numeric"
                     value={formData.phone}
-                    onChange={(event) =>
+                    onChange={(value) =>
                       updateField(
                         "phone",
-                        formatPhone(
-                          event.target.value
-                        )
+                        value
                       )
                     }
                     className="h-14 rounded-2xl border-transparent bg-surface-muted px-5 text-base text-text-main placeholder:text-brand-navy-soft focus-visible:border-brand-navy-soft focus-visible:ring-brand-navy-soft/30"
