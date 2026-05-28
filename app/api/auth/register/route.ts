@@ -7,7 +7,7 @@ import { supabaseAdmin } from "@/app/lib/supabase";
 import { registerAuthSchema } from "@/app/types/auth";
 
 const profileSelect =
-  "id, email, full_name, role";
+  "id, email, full_name, phone, role";
 
 function isDuplicateConstraintError(
   message: string
@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
     const {
       email,
       password,
+      confirm_password: _confirmPassword,
       full_name,
+      phone,
       role,
     } = parsedBody.data;
 
@@ -98,6 +100,7 @@ export async function POST(req: NextRequest) {
         email_confirm: true,
         user_metadata: {
           full_name,
+          phone,
           role,
         },
       });
@@ -146,6 +149,7 @@ export async function POST(req: NextRequest) {
             id: data.user.id,
             email,
             full_name,
+            phone,
             role,
           },
           {
@@ -250,6 +254,7 @@ export async function POST(req: NextRequest) {
           id: data.user.id,
           email,
           full_name,
+          phone,
           role,
         },
         metadata: {
