@@ -5,10 +5,7 @@ import { cookies } from "next/headers";
 import HeaderCliente from "@/components/e/HeaderCliente";
 import { Button } from "@/components/ui/button";
 import { verifyAccessToken } from "@/app/lib/jwt";
-import {
-  supabase,
-  supabaseAdmin,
-} from "@/app/lib/supabase";
+import { supabase, supabaseAdmin } from "@/app/lib/supabase";
 
 type ClientProfile = {
   id: string;
@@ -19,8 +16,7 @@ type ClientProfile = {
   created_at: string;
 };
 
-const clientSelect =
-  "id, full_name, email, phone, avatar_url, created_at";
+const clientSelect = "id, full_name, email, phone, avatar_url, created_at";
 
 function getDatabaseClient() {
   return supabaseAdmin ?? supabase;
@@ -28,9 +24,7 @@ function getDatabaseClient() {
 
 async function getAuthenticatedUserId() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(
-    "sb-access-token"
-  )?.value;
+  const token = cookieStore.get("sb-access-token")?.value;
 
   if (!token) {
     return null;
@@ -45,10 +39,7 @@ async function getAuthenticatedUserId() {
 
 async function getClientProfile(id: string) {
   const db = getDatabaseClient();
-  const {
-    data: client,
-    error,
-  } = await db
+  const { data: client, error } = await db
     .from("profiles")
     .select(clientSelect)
     .eq("id", id)
@@ -62,18 +53,13 @@ async function getClientProfile(id: string) {
   return client as ClientProfile;
 }
 
-async function getCurrentUserProfile(
-  userId: string | null
-) {
+async function getCurrentUserProfile(userId: string | null) {
   if (!userId) {
     return null;
   }
 
   const db = getDatabaseClient();
-  const {
-    data: user,
-    error,
-  } = await db
+  const { data: user, error } = await db
     .from("profiles")
     .select("id, full_name, avatar_url")
     .eq("id", userId)
@@ -83,10 +69,7 @@ async function getCurrentUserProfile(
     return null;
   }
 
-  return user as Pick<
-    ClientProfile,
-    "id" | "full_name" | "avatar_url"
-  >;
+  return user as Pick<ClientProfile, "id" | "full_name" | "avatar_url">;
 }
 
 function getInitials(name: string) {
@@ -99,25 +82,19 @@ function getInitials(name: string) {
 }
 
 function formatCreatedAt(date: string) {
-  return new Intl.DateTimeFormat(
-    "pt-BR",
-    {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }
-  ).format(new Date(date));
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
 }
 
 function formatMemberSince(date: string) {
   const now = new Date();
   const createdAt = new Date(date);
   const diffInMonths =
-    (now.getFullYear() -
-      createdAt.getFullYear()) *
-      12 +
-    (now.getMonth() -
-      createdAt.getMonth());
+    (now.getFullYear() - createdAt.getFullYear()) * 12 +
+    (now.getMonth() - createdAt.getMonth());
 
   if (diffInMonths <= 0) {
     return "Novo por aqui";
@@ -131,9 +108,7 @@ function formatMemberSince(date: string) {
     return `Membro há ${diffInMonths} meses`;
   }
 
-  const years = Math.floor(
-    diffInMonths / 12
-  );
+  const years = Math.floor(diffInMonths / 12);
 
   if (years === 1) {
     return "Membro há 1 ano";
@@ -150,25 +125,18 @@ export default async function ClienteProfilePage({
   }>;
 }) {
   const { id } = await params;
-  const authenticatedUserId =
-    await getAuthenticatedUserId();
-  const [client, currentUser] =
-    await Promise.all([
-      getClientProfile(id),
-      getCurrentUserProfile(
-        authenticatedUserId
-      ),
-    ]);
+  const authenticatedUserId = await getAuthenticatedUserId();
+  const [client, currentUser] = await Promise.all([
+    getClientProfile(id),
+    getCurrentUserProfile(authenticatedUserId),
+  ]);
 
   if (!client) {
     notFound();
   }
 
-  const isOwner =
-    authenticatedUserId === client.id;
-  const initials = getInitials(
-    client.full_name
-  );
+  const isOwner = authenticatedUserId === client.id;
+  const initials = getInitials(client.full_name);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#ffffff_0%,_#eff5f4_42%,_#dee4e3_100%)] text-text-main">
@@ -186,9 +154,7 @@ export default async function ClienteProfilePage({
                 Perfil de cliente
               </span>
               <span className="text-sm font-medium text-text-muted">
-                {formatMemberSince(
-                  client.created_at
-                )}
+                {formatMemberSince(client.created_at)}
               </span>
             </div>
 
@@ -197,9 +163,9 @@ export default async function ClienteProfilePage({
             </h1>
 
             <p className="mt-5 max-w-2xl text-lg leading-9 text-text-muted sm:text-xl">
-              Cliente cadastrado no marketplace com contato centralizado
-              para acompanhamento de serviços, solicitações e histórico
-              de relacionamento.
+              Cliente cadastrado no marketplace com contato centralizado para
+              acompanhamento de serviços, solicitações e histórico de
+              relacionamento.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -208,15 +174,10 @@ export default async function ClienteProfilePage({
               </span>
               <span className="border-l-4 border-brand-navy bg-surface-muted px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-brand-steel-mid">
                 Conta criada em{" "}
-                {new Intl.DateTimeFormat(
-                  "pt-BR",
-                  {
-                    month: "2-digit",
-                    year: "numeric",
-                  }
-                ).format(
-                  new Date(client.created_at)
-                )}
+                {new Intl.DateTimeFormat("pt-BR", {
+                  month: "2-digit",
+                  year: "numeric",
+                }).format(new Date(client.created_at))}
               </span>
               {isOwner && client.phone ? (
                 <span className="border-l-4 border-brand-navy bg-surface-muted px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-brand-steel-mid">
@@ -267,8 +228,7 @@ export default async function ClienteProfilePage({
                       Telefone
                     </p>
                     <p className="mt-2 text-lg font-semibold">
-                      {client.phone ??
-                        "Telefone não informado"}
+                      {client.phone ?? "Telefone não informado"}
                     </p>
                   </div>
                 ) : null}
@@ -303,9 +263,7 @@ export default async function ClienteProfilePage({
                   Cliente desde
                 </p>
                 <p className="mt-3 text-xl font-bold text-brand-navy">
-                  {formatCreatedAt(
-                    client.created_at
-                  )}
+                  {formatCreatedAt(client.created_at)}
                 </p>
               </div>
 
@@ -323,11 +281,10 @@ export default async function ClienteProfilePage({
                   Resumo
                 </p>
                 <p className="mt-3 max-w-3xl text-lg leading-8 text-text-muted">
-                  Este perfil concentra os dados essenciais do cliente
-                  para identificação, contato e navegação dentro do
-                  marketplace. A proposta visual segue a mesma base
-                  editorial do restante do projeto, com foco em leitura
-                  rápida e apresentação elegante.
+                  Este perfil concentra os dados essenciais do cliente para
+                  identificação, contato e navegação dentro do marketplace. A
+                  proposta visual segue a mesma base editorial do restante do
+                  projeto, com foco em leitura rápida e apresentação elegante.
                 </p>
               </div>
             </div>
@@ -340,11 +297,7 @@ export default async function ClienteProfilePage({
                   size="lg"
                   className="rounded-2xl uppercase tracking-[0.18em]"
                 >
-                  <Link
-                    href={`/cliente/${client.id}/edit`}
-                  >
-                    Editar perfil
-                  </Link>
+                  <Link href={`/cliente/${client.id}/edit`}>Editar perfil</Link>
                 </Button>
               </div>
             ) : null}
