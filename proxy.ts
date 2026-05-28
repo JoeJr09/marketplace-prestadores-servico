@@ -1,18 +1,43 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import {
+  NextResponse,
+  type NextRequest,
+} from "next/server";
 
 const PUBLIC_ROUTES = [
   "/login",
   "/register",
 ];
 
-export async function middleware(
+function decodeJwtPayload(
+  token: string
+) {
+  const [, payload] = token.split(".");
+
+  if (!payload) {
+    throw new Error("JWT inválido");
+  }
+
+  const normalizedPayload =
+    payload
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  return JSON.parse(
+    Buffer.from(
+      normalizedPayload,
+      "base64"
+    ).toString("utf-8")
+  ) as {
+    role?: string;
+  };
+}
+
+export async function proxy(
   request: NextRequest
 ) {
   const pathname =
     request.nextUrl.pathname;
 
-  // Libera rotas públicas
   const isPublicRoute =
     PUBLIC_ROUTES.some((route) =>
       pathname.startsWith(route)
@@ -22,13 +47,11 @@ export async function middleware(
     return NextResponse.next();
   }
 
-  // Pega token JWT do Supabase
   const token =
     request.cookies.get(
       "sb-access-token"
     )?.value;
 
-  // Sem token → login
   if (!token) {
     return NextResponse.redirect(
       new URL("/login", request.url)
@@ -36,58 +59,35 @@ export async function middleware(
   }
 
   try {
-    /**
-     * JWT payload
-     */
-    const payload = JSON.parse(
-      Buffer.from(
-        token.split(".")[1],
-        "base64"
-      ).toString()
-    );
+    const payload =
+      decodeJwtPayload(token);
 
-    /**
-     * Role salva no JWT
-     *
-     * IMPORTANTE:
-     * depois vamos pegar do banco
-     * mas já deixamos preparado
-     */
     const userRole =
-      payload.role || "CLIENTE";
+      payload.role || "client";
 
-    /**
-     * admin
-     */
     if (
       pathname.startsWith("/admin") &&
-      userRole !== "ADMIN"
+      userRole !== "admin"
     ) {
       return NextResponse.redirect(
         new URL("/", request.url)
       );
     }
 
-    /**
-     * prestador
-     */
     if (
       pathname.startsWith(
         "/prestador"
       ) &&
-      userRole !== "PRESTADOR"
+      userRole !== "professional"
     ) {
       return NextResponse.redirect(
         new URL("/", request.url)
       );
     }
 
-    /**
-     * cliente
-     */
     if (
       pathname.startsWith("/cliente") &&
-      userRole !== "CLIENTE"
+      userRole !== "client"
     ) {
       return NextResponse.redirect(
         new URL("/", request.url)
@@ -95,7 +95,6 @@ export async function middleware(
     }
 
     return NextResponse.next();
-
   } catch (error) {
     console.error(error);
 

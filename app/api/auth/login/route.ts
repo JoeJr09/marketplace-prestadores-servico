@@ -1,36 +1,42 @@
-import { NextResponse, type NextRequest } from "next/server";
+import {
+  NextResponse,
+  type NextRequest,
+} from "next/server";
 
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "@/app/lib/jwt";
+import {
+  supabase,
+  supabaseAdmin,
+} from "@/app/lib/supabase";
+import { loginAuthSchema } from "@/app/types/auth";
 
-interface LoginRequestBody {
-  email?: string;
-  password?: string;
-}
+const profileSelect =
+  "id, full_name, email, phone, avatar_url, role, created_at, updated_at";
 
 export async function POST(req: NextRequest) {
   try {
-    const body =
-      (await req.json()) as LoginRequestBody;
+    const parsedBody =
+      loginAuthSchema.safeParse(
+        await req.json()
+      );
 
-    const { email, password } = body;
-
-    if (!email || !password) {
+    if (!parsedBody.success) {
       return NextResponse.json(
         {
-          error:
-            "Email e senha são obrigatórios",
+          error: "Dados inválidos",
+          details:
+            parsedBody.error.flatten()
+              .fieldErrors,
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    const { supabase } =
-      await import("@/app/lib/supabase");
+    const { email, password } =
+      parsedBody.data;
 
     const { data, error } =
       await supabase.auth.signInWithPassword({
@@ -41,33 +47,27 @@ export async function POST(req: NextRequest) {
     if (error || !data.user) {
       return NextResponse.json(
         {
-          error:
-            "Email ou senha inválidos",
+          error: "Email ou senha inválidos",
         },
-        {
-          status: 401,
-        }
+        { status: 401 }
       );
     }
 
     const {
       data: profile,
       error: profileError,
-    } = await supabase
+    } = await (supabaseAdmin ?? supabase)
       .from("profiles")
-      .select("*")
+      .select(profileSelect)
       .eq("id", data.user.id)
       .single();
 
     if (profileError || !profile) {
       return NextResponse.json(
         {
-          error:
-            "Perfil não encontrado",
+          error: "Perfil não encontrado",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
     }
 
@@ -118,16 +118,14 @@ export async function POST(req: NextRequest) {
     );
 
     return response;
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
 
     return NextResponse.json(
       {
         error: "Erro interno",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
