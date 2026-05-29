@@ -11,7 +11,7 @@ import {
 import { updateAuthSchema } from "@/app/types/auth";
 
 const profileSelect =
-  "id, full_name, email, phone, avatar_url, role, created_at, updated_at";
+  "id, full_name, email, phone, avatar_url, bio, role, created_at, updated_at";
 
 function getDatabaseClient() {
   return supabaseAdmin ?? supabase;
@@ -127,6 +127,7 @@ export async function PUT(req: NextRequest) {
       full_name,
       phone,
       avatar_url,
+      bio,
     } = parsedBody.data;
 
     if (
@@ -172,8 +173,7 @@ export async function PUT(req: NextRequest) {
     > = {};
 
     if (full_name !== undefined) {
-      profileUpdates.full_name =
-        full_name;
+      profileUpdates.full_name = full_name;
     }
 
     if (email !== undefined) {
@@ -185,8 +185,11 @@ export async function PUT(req: NextRequest) {
     }
 
     if (avatar_url !== undefined) {
-      profileUpdates.avatar_url =
-        avatar_url;
+      profileUpdates.avatar_url = avatar_url;
+    }
+
+    if (bio !== undefined) {
+      profileUpdates.bio = bio;
     }
 
     if (

@@ -116,6 +116,10 @@ export const updateAuthSchema = z
       emptyStringToNull,
       z.string().url("Avatar deve ser uma URL valida").nullable().optional(),
     ),
+    bio: z.preprocess(
+      emptyStringToNull,
+      z.string().trim().max(500, "Bio deve ter no máximo 500 caracteres").nullable().optional(),
+    ),
   })
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: "Informe ao menos um campo para atualizacao",

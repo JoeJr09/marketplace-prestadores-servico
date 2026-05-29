@@ -18,6 +18,7 @@ type ClientProfile = {
   email: string;
   phone: string | null;
   avatar_url: string | null;
+  bio: string | null;
 };
 
 type CurrentUserProfile = {
@@ -27,7 +28,7 @@ type CurrentUserProfile = {
 };
 
 const clientSelect =
-  "id, full_name, email, phone, avatar_url";
+  "id, full_name, email, phone, avatar_url, bio";
 
 function getDatabaseClient() {
   return supabaseAdmin ?? supabase;

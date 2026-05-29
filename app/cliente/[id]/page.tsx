@@ -13,10 +13,11 @@ type ClientProfile = {
   email: string;
   phone: string | null;
   avatar_url: string | null;
+  bio: string | null;
   created_at: string;
 };
 
-const clientSelect = "id, full_name, email, phone, avatar_url, created_at";
+const clientSelect = "id, full_name, email, phone, avatar_url, bio, created_at";
 
 function getDatabaseClient() {
   return supabaseAdmin ?? supabase;
@@ -96,33 +97,19 @@ function formatMemberSince(date: string) {
     (now.getFullYear() - createdAt.getFullYear()) * 12 +
     (now.getMonth() - createdAt.getMonth());
 
-  if (diffInMonths <= 0) {
-    return "Novo por aqui";
-  }
-
-  if (diffInMonths === 1) {
-    return "Membro há 1 mês";
-  }
-
-  if (diffInMonths < 12) {
-    return `Membro há ${diffInMonths} meses`;
-  }
+  if (diffInMonths <= 0) return "Novo por aqui";
+  if (diffInMonths === 1) return "Membro há 1 mês";
+  if (diffInMonths < 12) return `Membro há ${diffInMonths} meses`;
 
   const years = Math.floor(diffInMonths / 12);
-
-  if (years === 1) {
-    return "Membro há 1 ano";
-  }
-
+  if (years === 1) return "Membro há 1 ano";
   return `Membro há ${years} anos`;
 }
 
 export default async function ClienteProfilePage({
   params,
 }: {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
   const authenticatedUserId = await getAuthenticatedUserId();
@@ -162,10 +149,8 @@ export default async function ClienteProfilePage({
               {client.full_name}
             </h1>
 
-            <p className="mt-5 max-w-2xl text-lg leading-9 text-text-muted sm:text-xl">
-              Cliente cadastrado no marketplace com contato centralizado para
-              acompanhamento de serviços, solicitações e histórico de
-              relacionamento.
+            <p className="mt-5 max-w-2xl text-lg leading-9 text-text-muted sm:text-xl break-words whitespace-pre-wrap">
+              {client.bio ?? "Cliente cadastrado no marketplace com contato centralizado para acompanhamento de serviços, solicitações e histórico de relacionamento."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -276,17 +261,25 @@ export default async function ClienteProfilePage({
                 </p>
               </div>
 
-              <div className="rounded-[1.5rem] border border-border bg-surface-plain p-5 sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
-                  Resumo
-                </p>
-                <p className="mt-3 max-w-3xl text-lg leading-8 text-text-muted">
-                  Este perfil concentra os dados essenciais do cliente para
-                  identificação, contato e navegação dentro do marketplace. A
-                  proposta visual segue a mesma base editorial do restante do
-                  projeto, com foco em leitura rápida e apresentação elegante.
-                </p>
-              </div>
+              {client.bio ? (
+                <div className="rounded-[1.5rem] border border-border bg-surface-plain p-5 sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
+                    Sobre mim
+                  </p>
+                  <p className="mt-3 max-w-3xl text-lg leading-8 text-text-muted">
+                    {client.bio}
+                  </p>
+                </div>
+              ) : isOwner ? (
+                <div className="rounded-[1.5rem] border border-dashed border-border bg-surface-plain p-5 sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
+                    Sobre mim
+                  </p>
+                  <p className="mt-3 text-base text-text-subtle italic">
+                    Você ainda não adicionou uma bio. Edite seu perfil para contar um pouco sobre você.
+                  </p>
+                </div>
+              ) : null}
             </div>
 
             {isOwner ? (

@@ -14,6 +14,7 @@ type EditSettingsPanelProps = {
     email: string;
     phone: string | null;
     avatar_url: string | null;
+    bio: string | null;
   };
   startInEditMode?: boolean;
 };
@@ -48,6 +49,7 @@ export function EditSettingsPanel({
     email: client.email,
     phone: client.phone ?? "",
     avatar_url: client.avatar_url ?? "",
+    bio: client.bio ?? "",
     password: "",
   });
 
@@ -57,6 +59,7 @@ export function EditSettingsPanel({
       email: client.email,
       phone: client.phone ?? "",
       avatar_url: client.avatar_url ?? "",
+      bio: client.bio ?? "",
       password: "",
     });
     setAvatarPreview(client.avatar_url);
@@ -413,6 +416,32 @@ export function EditSettingsPanel({
                   className="h-12 rounded-2xl border-border bg-white/80 px-4"
                   placeholder="Deixe em branco para manter a atual"
                 />
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
+                <label
+                  htmlFor="bio"
+                  className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle"
+                >
+                  Sobre mim
+                </label>
+                <textarea
+                  id="bio"
+                  rows={4}
+                  value={formData.bio}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      bio: event.target.value,
+                    }))
+                  }
+                  className="w-full resize-none rounded-2xl border border-border bg-white/80 px-4 py-3 text-sm text-text-main outline-none focus:ring-2 focus:ring-brand-navy/20"
+                  placeholder="Conte um pouco sobre você..."
+                  maxLength={500}
+                />
+                <p className="text-right text-xs text-text-subtle">
+                  {formData.bio.length}/500
+                </p>
               </div>
             </div>
           </form>
