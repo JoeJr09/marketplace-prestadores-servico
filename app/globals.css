@@ -16,12 +16,18 @@
   --color-brand-orange: var(--brand-orange);
   --color-brand-brown: var(--brand-brown);
   --color-brand-steel: var(--brand-steel);
+  --color-brand-slate: var(--brand-slate);
+  --color-brand-slate-pale: var(--brand-slate-pale);
+  --color-brand-charcoal: var(--brand-charcoal);
   --color-brand-steel-deep: var(--brand-steel-deep);
   --color-brand-steel-mid: var(--brand-steel-mid);
+  --color-brand-brown-deep: var(--brand-brown-deep);
+  --color-brand-brown-rich: var(--brand-brown-rich);
   --color-surface-plain: var(--surface-plain);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-surface-soft: var(--surface-soft);
+  --color-surface-frost: var(--surface-frost);
   --color-text-main: var(--text-main);
   --color-text-strong: var(--text-strong);
   --color-text-muted: var(--text-muted);
@@ -107,13 +113,19 @@
   --brand-orange: #da7700;
   --brand-brown: #2f1500;
   --brand-steel: #94a3b8;
+  --brand-slate: #64748b;
+  --brand-slate-pale: #cbd5e1;
+  --brand-charcoal: #44474c;
   --brand-steel-deep: #475569;
   --brand-steel-mid: #1a2b3c;
+  --brand-brown-deep: #261000;
+  --brand-brown-rich: #432100;
 
   --surface-plain: #f5fafa;
   --surface: #ffffff;
   --surface-muted: #eff5f4;
   --surface-soft: #dee4e3;
+  --surface-frost: #f8fbfb;
 
   --text-main: #041627;
   --text-strong: #171d1d;
