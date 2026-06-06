@@ -15,17 +15,22 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProfessionalServiceFooter } from "@/components/professionals/ProfessionalServiceFooter";
 import { ProfessionalServiceHeader } from "@/components/professionals/ProfessionalServiceHeader";
+import { ProfessionalServiceRequestsPanel } from "@/components/professionals/ProfessionalServiceRequestsPanel";
 import { ProfessionalServiceSidebar } from "@/components/professionals/ProfessionalServiceSidebar";
 import type {
   ProfessionalDashboardProfile,
   ServiceCard,
   ServiceCategory,
+  ServiceRequestCard,
 } from "@/components/professionals/service-management.types";
 
 type ServiceManagementWorkspaceProps = {
   professional: ProfessionalDashboardProfile;
+  serviceRequests: ServiceRequestCard[];
+  activeTab: "services" | "requests";
 };
 
 const initialServices: ServiceCard[] = [
@@ -88,9 +93,13 @@ function getDomainDefaults(
 
 export function ServiceManagementWorkspace({
   professional,
+  serviceRequests,
+  activeTab,
 }: ServiceManagementWorkspaceProps) {
   const [services, setServices] =
     useState(initialServices);
+  const [serviceRequestsState, setServiceRequestsState] =
+    useState(serviceRequests);
   const [domains, setDomains] = useState(
     getDomainDefaults(professional),
   );
@@ -104,6 +113,12 @@ export function ServiceManagementWorkspace({
   const activeOfferings = services.filter(
     (service) => service.status === "Active",
   ).length;
+  const openRequestsCount =
+    serviceRequestsState.filter(
+      (request) =>
+        request.status === "PENDENTE" ||
+        request.status === "ACEITA",
+    ).length;
 
   function handleCreateService(
     event: FormEvent<HTMLFormElement>,
@@ -159,34 +174,53 @@ export function ServiceManagementWorkspace({
   }
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f8fbfb_0%,#eff5f4_52%,#dee4e3_100%)] p-4 text-text-main sm:p-6 lg:p-8">
-        <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-[1540px] overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 shadow-[0_28px_80px_rgba(4,22,39,0.08)] backdrop-blur">
-          <ProfessionalServiceSidebar
-            rating={professional.avg_rating}
-            totalReviews={
-              professional.total_reviews
-            }
-            isVerified={
-              professional.is_verified
-            }
-          />
+    <TooltipProvider>
+      <SidebarProvider defaultOpen>
+        <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f8fbfb_0%,#eff5f4_52%,#dee4e3_100%)] p-4 text-text-main sm:p-6 lg:p-8">
+          <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-[1540px] overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 shadow-[0_28px_80px_rgba(4,22,39,0.08)] backdrop-blur">
+            <ProfessionalServiceSidebar
+              profileId={professional.profile.id}
+              activeTab={activeTab}
+              pendingRequestsCount={
+                openRequestsCount
+              }
+              rating={professional.avg_rating}
+              totalReviews={
+                professional.total_reviews
+              }
+              isVerified={
+                professional.is_verified
+              }
+            />
 
-          <SidebarInset className="bg-transparent">
-            <div className="flex min-h-full flex-col p-5 sm:p-7 lg:p-8 xl:p-10">
-              <ProfessionalServiceHeader
-                professional={professional}
-              />
+            <SidebarInset className="bg-transparent">
+              <div className="flex min-h-full flex-col p-5 sm:p-7 lg:p-8 xl:p-10">
+                <ProfessionalServiceHeader
+                  professional={professional}
+                />
 
-              <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)]">
-                <section className="space-y-6">
-                  <div className="rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_18px_50px_rgba(4,22,39,0.08)]">
-                    <div className="flex items-center gap-3">
-                      <PlusCircle className="size-5 text-brand-navy" />
-                      <h2 className="text-2xl font-black tracking-[-0.03em] text-brand-navy">
-                        New Service Blueprint
-                      </h2>
-                    </div>
+                {activeTab === "requests" ? (
+                  <div className="mt-8">
+                    <ProfessionalServiceRequestsPanel
+                      professional={professional}
+                      requests={
+                        serviceRequestsState
+                      }
+                      onRequestsChange={
+                        setServiceRequestsState
+                      }
+                    />
+                  </div>
+                ) : (
+                <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)]">
+                  <section className="space-y-6">
+                    <div className="rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_18px_50px_rgba(4,22,39,0.08)]">
+                      <div className="flex items-center gap-3">
+                        <PlusCircle className="size-5 text-brand-navy" />
+                        <h2 className="text-2xl font-black tracking-[-0.03em] text-brand-navy">
+                          New Service Blueprint
+                        </h2>
+                      </div>
 
                     <form
                       className="mt-6 grid gap-5"
@@ -481,13 +515,15 @@ export function ServiceManagementWorkspace({
                     ))}
                   </div>
                 </section>
-              </div>
+                </div>
+                )}
 
-              <ProfessionalServiceFooter />
-            </div>
-          </SidebarInset>
+                <ProfessionalServiceFooter />
+              </div>
+            </SidebarInset>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

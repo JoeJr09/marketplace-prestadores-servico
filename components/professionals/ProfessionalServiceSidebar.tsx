@@ -3,11 +3,7 @@
 import Link from "next/link";
 import {
   BriefcaseBusiness,
-  CreditCard,
-  LayoutDashboard,
-  ReceiptText,
-  Settings,
-  Star,
+  NotebookTabs,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,52 +15,44 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "#",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Service Management",
-    href: "#",
-    icon: BriefcaseBusiness,
-    active: true,
-  },
-  {
-    label: "Subscriptions",
-    href: "#",
-    icon: CreditCard,
-  },
-  {
-    label: "Reviews",
-    href: "#",
-    icon: Star,
-  },
-  {
-    label: "Order Details",
-    href: "#",
-    icon: ReceiptText,
-  },
-  {
-    label: "Settings",
-    href: "#",
-    icon: Settings,
-  },
-];
+type SidebarTab = "services" | "requests";
 
 type ProfessionalServiceSidebarProps = {
+  profileId: string;
+  activeTab: SidebarTab;
+  pendingRequestsCount: number;
   rating: number | null;
   totalReviews: number | null;
   isVerified: boolean;
 };
 
+const navItems = [
+  {
+    label: "Gerenciar servicos",
+    href: (profileId: string) =>
+      `/professional/${profileId}/service-management`,
+    icon: BriefcaseBusiness,
+    tab: "services" as const,
+  },
+  {
+    label: "Solicitacoes",
+    href: (profileId: string) =>
+      `/professional/${profileId}/service-management?tab=requests`,
+    icon: NotebookTabs,
+    tab: "requests" as const,
+  },
+];
+
 export function ProfessionalServiceSidebar({
+  profileId,
+  activeTab,
+  pendingRequestsCount,
   rating,
   totalReviews,
   isVerified,
@@ -100,15 +88,27 @@ export function ProfessionalServiceSidebar({
                     <SidebarMenuButton
                       asChild
                       size="lg"
-                      isActive={item.active}
+                      isActive={
+                        activeTab === item.tab
+                      }
                       tooltip={item.label}
                       className="rounded-2xl px-4 text-[11px] font-semibold uppercase tracking-[0.22em] data-[active=true]:bg-brand-navy data-[active=true]:text-white"
                     >
-                      <Link href={item.href}>
+                      <Link
+                        href={item.href(
+                          profileId,
+                        )}
+                      >
                         <Icon className="size-4" />
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {item.tab === "requests" &&
+                    pendingRequestsCount > 0 ? (
+                      <SidebarMenuBadge>
+                        {pendingRequestsCount}
+                      </SidebarMenuBadge>
+                    ) : null}
                   </SidebarMenuItem>
                 );
               })}

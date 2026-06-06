@@ -1,5 +1,8 @@
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import {
+  notFound,
+  redirect,
+} from "next/navigation";
 
 import { verifyAccessToken } from "@/app/lib/jwt";
 import {
@@ -7,6 +10,10 @@ import {
   supabaseAdmin,
 } from "@/app/lib/supabase";
 import { ServiceManagementWorkspace } from "@/components/professionals/ServiceManagementWorkspace";
+import type {
+  ServiceRequestCard,
+  ServiceRequestStatus,
+} from "@/components/professionals/service-management.types";
 
 type ProfessionalRecord = {
   id: string;
@@ -16,6 +23,7 @@ type ProfessionalRecord = {
   role: string;
   professionals:
     | {
+        id: string;
         business_name: string | null;
         bio: string | null;
         years_experience: number | null;
@@ -28,6 +36,7 @@ type ProfessionalRecord = {
         total_reviews: number | null;
       }
     | {
+        id: string;
         business_name: string | null;
         bio: string | null;
         years_experience: number | null;
@@ -41,6 +50,14 @@ type ProfessionalRecord = {
       }[];
 };
 
+type CalendarRequestRecord = {
+  id: string;
+  created_at: string;
+  id_cliente: string;
+  date_service: string;
+  status: string;
+};
+
 const professionalSelect = `
   id,
   full_name,
@@ -48,6 +65,7 @@ const professionalSelect = `
   avatar_url,
   role,
   professionals!inner (
+    id,
     business_name,
     bio,
     years_experience,
@@ -117,6 +135,108 @@ async function getProfessional(
   return professional as ProfessionalRecord;
 }
 
+async function getServiceRequests(
+  professionalId: string,
+) {
+  const db = getDatabaseClient();
+  const {
+    data: requests,
+    error,
+  } = await db
+    .from("calendar")
+    .select(
+      "id, created_at, id_cliente, date_service, status",
+    )
+    .eq("id_professional", professionalId)
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error || !requests) {
+    return [];
+  }
+
+  const clientIds = Array.from(
+    new Set(
+      requests
+        .map((request) => request.id_cliente)
+        .filter(
+          (
+            clientId,
+          ): clientId is string =>
+            typeof clientId === "string",
+        ),
+    ),
+  );
+
+  const clientsById = new Map<
+    string,
+    {
+      full_name: string | null;
+      email: string;
+    }
+  >();
+
+  if (clientIds.length > 0) {
+    const {
+      data: clientProfiles,
+      error: clientProfilesError,
+    } = await db
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", clientIds);
+
+    if (
+      !clientProfilesError &&
+      clientProfiles
+    ) {
+      clientProfiles.forEach((client) => {
+        clientsById.set(client.id, {
+          full_name:
+            client.full_name,
+          email: client.email,
+        });
+      });
+    }
+  }
+
+  return (
+    requests as CalendarRequestRecord[]
+  ).map((request) => {
+    const client =
+      clientsById.get(
+        request.id_cliente,
+      );
+
+    return {
+      id: request.id,
+      client_id: request.id_cliente,
+      client_name:
+        client?.full_name ??
+        "Cliente sem nome",
+      client_email:
+        client?.email ?? "",
+      created_at:
+        request.created_at,
+      date_service:
+        request.date_service,
+      status: (
+        typeof request.status ===
+          "string" &&
+        [
+          "PENDENTE",
+          "ACEITA",
+          "RECUSADA",
+          "CONCLUIDA",
+          "ABORTADA",
+        ].includes(request.status)
+          ? request.status
+          : "PENDENTE"
+      ) as ServiceRequestStatus,
+    } satisfies ServiceRequestCard;
+  });
+}
+
 function normalizeProfessional(
   professional: ProfessionalRecord,
 ) {
@@ -127,6 +247,8 @@ function normalizeProfessional(
     : professional.professionals;
 
   return {
+    professional_id:
+      detail?.id ?? "",
     profile: {
       id: professional.id,
       full_name: professional.full_name,
@@ -153,19 +275,38 @@ function normalizeProfessional(
   };
 }
 
+function getActiveTab(
+  tabValue:
+    | string
+    | string[]
+    | undefined,
+) {
+  return tabValue === "requests"
+    ? "requests"
+    : "services";
+}
+
 export default async function ProfessionalServiceManagementPage(
   props: {
     params: Promise<{
       id: string;
     }>;
+    searchParams: Promise<{
+      tab?:
+        | string
+        | string[]
+        | undefined;
+    }>;
   },
 ) {
   const { id } = await props.params;
+  const searchParams =
+    await props.searchParams;
   const authenticatedUser =
     await getAuthenticatedUser();
 
   if (!authenticatedUser) {
-    redirect("/login");
+    redirect("/login/professional");
   }
 
   const canManage =
@@ -183,10 +324,25 @@ export default async function ProfessionalServiceManagementPage(
     notFound();
   }
 
+  const normalizedProfessional =
+    normalizeProfessional(
+      professional,
+    );
+  const serviceRequests =
+    await getServiceRequests(
+      normalizedProfessional.professional_id,
+    );
+
   return (
     <ServiceManagementWorkspace
-      professional={normalizeProfessional(
-        professional,
+      professional={
+        normalizedProfessional
+      }
+      serviceRequests={
+        serviceRequests
+      }
+      activeTab={getActiveTab(
+        searchParams.tab,
       )}
     />
   );

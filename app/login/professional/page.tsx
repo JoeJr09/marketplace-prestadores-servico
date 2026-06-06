@@ -14,6 +14,11 @@ type LoginResponse = {
   user?: {
     role: "client" | "professional" | "admin";
   };
+  professional?: {
+    profile?: {
+      id: string;
+    };
+  };
 };
 
 export default function ProfessionalLoginPage() {
@@ -49,9 +54,19 @@ export default function ProfessionalLoginPage() {
         return;
       }
 
+      const professionalProfileId =
+        data.professional?.profile?.id;
+      const redirectPath =
+        professionalProfileId
+          ? `/professional/${professionalProfileId}/service-management?tab=requests`
+          : "/prestador";
+
       startTransition(() => {
-        router.push("/prestador");
+        router.replace(redirectPath);
+        router.refresh();
       });
+
+      window.location.href = redirectPath;
     } catch {
       setErrorMessage("Nao foi possivel conectar ao servidor.");
     } finally {
