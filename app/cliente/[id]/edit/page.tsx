@@ -5,7 +5,8 @@ import {
 } from "next/navigation";
 
 import { EditSettingsPanel } from "@/components/e/EditSettingsPanel";
-import HeaderCliente from "@/components/e/HeaderCliente";
+import Footer from "@/components/e/Footer";
+import Header from "@/components/e/Header";
 import { verifyAccessToken } from "@/app/lib/jwt";
 import {
   supabase,
@@ -19,12 +20,6 @@ type ClientProfile = {
   phone: string | null;
   avatar_url: string | null;
   bio: string | null;
-};
-
-type CurrentUserProfile = {
-  id: string;
-  full_name: string;
-  avatar_url: string | null;
 };
 
 const clientSelect =
@@ -70,30 +65,6 @@ async function getClientProfile(id: string) {
   return client as ClientProfile;
 }
 
-async function getCurrentUserProfile(
-  userId: string | null
-) {
-  if (!userId) {
-    return null;
-  }
-
-  const db = getDatabaseClient();
-  const {
-    data: user,
-    error,
-  } = await db
-    .from("profiles")
-    .select("id, full_name, avatar_url")
-    .eq("id", userId)
-    .single();
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user as CurrentUserProfile;
-}
-
 export default async function ClienteEditPage({
   params,
 }: {
@@ -109,13 +80,7 @@ export default async function ClienteEditPage({
     redirect(`/cliente/${id}`);
   }
 
-  const [client, currentUser] =
-    await Promise.all([
-      getClientProfile(id),
-      getCurrentUserProfile(
-        authenticatedUserId
-      ),
-    ]);
+  const client = await getClientProfile(id);
 
   if (!client) {
     notFound();
@@ -126,21 +91,26 @@ export default async function ClienteEditPage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#ffffff_0%,_#eff5f4_42%,_#dee4e3_100%)] text-text-main">
-      <HeaderCliente currentUser={currentUser} />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#ffffff_0%,_#eff5f4_42%,_#dee4e3_100%)] text-text-main">
+      <Header />
 
-      <section className="relative overflow-hidden px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
-        <div className="absolute inset-x-0 top-0 h-64 bg-[linear-gradient(135deg,rgba(4,22,39,0.08),rgba(255,220,195,0.22),rgba(239,245,244,0))]" />
-        <div className="absolute -left-20 top-16 h-44 w-44 rounded-full bg-brand-peach/35 blur-3xl" />
-        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-brand-navy-soft/15 blur-3xl" />
+      <main>
+        <section className="relative overflow-hidden px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
+          <div className="absolute inset-x-0 top-0 h-64 bg-[linear-gradient(135deg,rgba(4,22,39,0.08),rgba(255,220,195,0.22),rgba(239,245,244,0))]" />
+          <div className="absolute -left-20 top-16 h-44 w-44 rounded-full bg-brand-peach/35 blur-3xl" />
+          <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-brand-navy-soft/15 blur-3xl" />
 
-        <div className="relative mx-auto max-w-5xl">
-          <EditSettingsPanel
-            client={client}
-            startInEditMode
-          />
-        </div>
-      </section>
-    </main>
+          <div className="relative mx-auto max-w-5xl">
+            <EditSettingsPanel
+              client={client}
+              startInEditMode
+              cancelHref={`/cliente/${client.id}`}
+            />
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

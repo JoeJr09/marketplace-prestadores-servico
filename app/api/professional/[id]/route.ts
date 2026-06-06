@@ -8,6 +8,7 @@ import {
   supabase,
   supabaseAdmin,
 } from "@/app/lib/supabase";
+import { normalizeBusinessName } from "@/app/lib/professional-slug";
 import {
   professionalIdSchema,
   updateProfessionalSchema,
@@ -58,6 +59,30 @@ const adminOnlyFields = [
 
 function getDatabaseClient() {
   return supabaseAdmin ?? supabase;
+}
+
+async function businessNameExists(
+  businessName: string,
+  exceptProfileId?: string,
+) {
+  const db = getDatabaseClient();
+  const { data, error } = await db
+    .from("professionals")
+    .select("profile_id, business_name");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).some((professional) => {
+    if (professional.profile_id === exceptProfileId) {
+      return false;
+    }
+
+    return (
+      normalizeBusinessName(professional.business_name ?? "") === businessName
+    );
+  });
 }
 
 function getTokenFromRequest(
@@ -318,7 +343,6 @@ async function updateProfessional(
     }
 
     const {
-      profile_id: _profileId,
       full_name,
       email,
       password,
@@ -431,8 +455,28 @@ async function updateProfessional(
     > = {};
 
     if (business_name !== undefined) {
-      professionalUpdates.business_name =
-        business_name;
+      const normalizedBusinessName =
+        business_name === null ? null : normalizeBusinessName(business_name);
+
+      if (!normalizedBusinessName) {
+        return NextResponse.json(
+          {
+            error: "Nome da empresa inválido",
+          },
+          { status: 400 },
+        );
+      }
+
+      if (await businessNameExists(normalizedBusinessName, id)) {
+        return NextResponse.json(
+          {
+            error: "Já existe um prestador com este nome de empresa",
+          },
+          { status: 409 },
+        );
+      }
+
+      professionalUpdates.business_name = normalizedBusinessName;
     }
 
     if (bio !== undefined) {

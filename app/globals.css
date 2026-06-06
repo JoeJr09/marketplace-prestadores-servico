@@ -23,6 +23,13 @@
   --color-brand-steel-mid: var(--brand-steel-mid);
   --color-brand-brown-deep: var(--brand-brown-deep);
   --color-brand-brown-rich: var(--brand-brown-rich);
+  --color-acode-header: var(--acode-header);
+  --color-acode-mist: var(--acode-mist);
+  --color-acode-panel: var(--acode-panel);
+  --color-acode-panel-strong: var(--acode-panel-strong);
+  --color-acode-footer: var(--acode-footer);
+  --color-hero-silver: var(--hero-silver);
+  --color-hero-panel: var(--hero-panel);
   --color-surface-plain: var(--surface-plain);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
@@ -120,6 +127,13 @@
   --brand-steel-mid: #1a2b3c;
   --brand-brown-deep: #261000;
   --brand-brown-rich: #432100;
+  --acode-header: #f8fafc;
+  --acode-mist: #eff5f4;
+  --acode-panel: #e4e9e9;
+  --acode-panel-strong: #c2c8c7;
+  --acode-footer: #1a2b3c;
+  --hero-silver: #e5e7eb;
+  --hero-panel: #223243;
 
   --surface-plain: #f5fafa;
   --surface: #ffffff;

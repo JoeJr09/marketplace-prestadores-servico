@@ -21,7 +21,7 @@ export function ProfessionalServiceFooter() {
             Offer Services
           </Link>
           <Link href="#">
-            How It Works
+            Encontre clientes
           </Link>
           <Link href="#">
             Help Center

@@ -8,6 +8,10 @@ const PUBLIC_ROUTES = [
   "/register",
 ];
 
+const EXACT_PUBLIC_ROUTES = [
+  "/prestador",
+];
+
 function decodeJwtPayload(
   token: string
 ) {
@@ -39,6 +43,9 @@ export async function proxy(
     request.nextUrl.pathname;
 
   const isPublicRoute =
+    EXACT_PUBLIC_ROUTES.includes(
+      pathname
+    ) ||
     PUBLIC_ROUTES.some((route) =>
       pathname.startsWith(route)
     );
@@ -78,16 +85,8 @@ export async function proxy(
       pathname.startsWith(
         "/prestador"
       ) &&
-      userRole !== "professional"
-    ) {
-      return NextResponse.redirect(
-        new URL("/", request.url)
-      );
-    }
-
-    if (
-      pathname.startsWith("/cliente") &&
-      userRole !== "client"
+      pathname !== "/prestador" &&
+      !pathname.startsWith("/prestador/")
     ) {
       return NextResponse.redirect(
         new URL("/", request.url)
@@ -106,6 +105,7 @@ export async function proxy(
 
 export const config = {
   matcher: [
+    "/cliente",
     "/cliente/:path*",
     "/prestador/:path*",
     "/admin/:path*",
