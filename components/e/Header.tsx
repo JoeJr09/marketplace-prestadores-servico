@@ -42,7 +42,10 @@ function getInitials(name: string) {
     .join("");
 }
 
-function getProfileHref(user: CurrentUser, professionalSlug: string | null) {
+function getProfileHref(
+  user: CurrentUser,
+  professionalSlug: string | null,
+) {
   if (user.role === "professional") {
     return professionalSlug
       ? `/prestador/${professionalSlug}`
@@ -57,37 +60,56 @@ function getProfileHref(user: CurrentUser, professionalSlug: string | null) {
 }
 
 export default function Header() {
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
-  const [professionalSlug, setProfessionalSlug] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] =
+    useState<CurrentUser | null>(null);
+  const [professionalSlug, setProfessionalSlug] =
+    useState<string | null>(null);
 
   useEffect(() => {
     let shouldUpdate = true;
 
     async function loadCurrentUser() {
       try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
+        const response = await fetch(
+          "/api/auth/me",
+          {
+            credentials: "include",
+          },
+        );
 
         if (!response.ok) {
           return;
         }
 
-        const data = (await response.json()) as MeResponse;
+        const data =
+          (await response.json()) as MeResponse;
 
         if (shouldUpdate && data.user) {
-          if (data.user.role === "professional") {
-            const professionalResponse = await fetch("/api/auth/me/professional", {
-              credentials: "include",
-            });
+          if (
+            data.user.role ===
+            "professional"
+          ) {
+            const professionalResponse =
+              await fetch(
+                "/api/auth/me/professional",
+                {
+                  credentials:
+                    "include",
+                },
+              );
 
             if (professionalResponse.ok) {
               const professionalData =
                 (await professionalResponse.json()) as ProfessionalMeResponse;
 
-              if (shouldUpdate && professionalData.professional) {
+              if (
+                shouldUpdate &&
+                professionalData.professional
+              ) {
                 setProfessionalSlug(
-                  getProfessionalSlug(professionalData.professional),
+                  getProfessionalSlug(
+                    professionalData.professional,
+                  ),
                 );
               }
             }
@@ -111,11 +133,20 @@ export default function Header() {
     };
   }, []);
 
-  const initials = currentUser ? getInitials(currentUser.full_name) : "";
+  const initials = currentUser
+    ? getInitials(currentUser.full_name)
+    : "";
   const profileHref = currentUser
-    ? getProfileHref(currentUser, professionalSlug)
+    ? getProfileHref(
+        currentUser,
+        professionalSlug,
+      )
     : "/login";
-  const clientDirectoryHref = currentUser ? "/cliente" : "/login";
+  const clientDirectoryHref = currentUser
+    ? "/cliente"
+    : "/login";
+  const showFavoritesEntry =
+    currentUser?.role === "client";
 
   return (
     <header className="border-b border-acode-panel-strong/60 bg-acode-header">
@@ -157,9 +188,19 @@ export default function Header() {
                     href="/prestador"
                     className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
                   >
-                    Encontre prestadores de serviço
+                    Encontre prestadores de servico
                   </Link>
                 </SheetClose>
+                {showFavoritesEntry ? (
+                  <SheetClose asChild>
+                    <Link
+                      href="/prestador?favorites=1"
+                      className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
+                    >
+                      Favoritos
+                    </Link>
+                  </SheetClose>
+                ) : null}
                 <SheetClose asChild>
                   <Link
                     href={clientDirectoryHref}
@@ -212,13 +253,25 @@ export default function Header() {
                 ) : (
                   <div className="grid gap-3">
                     <SheetClose asChild>
-                      <Button asChild variant="brand" className="rounded-md">
-                        <Link href="/login">Login cliente</Link>
+                      <Button
+                        asChild
+                        variant="brand"
+                        className="rounded-md"
+                      >
+                        <Link href="/login">
+                          Login cliente
+                        </Link>
                       </Button>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button asChild variant="surface" className="rounded-md">
-                        <Link href="/login/professional">Login prestador</Link>
+                      <Button
+                        asChild
+                        variant="surface"
+                        className="rounded-md"
+                      >
+                        <Link href="/login/professional">
+                          Login prestador
+                        </Link>
                       </Button>
                     </SheetClose>
                   </div>
@@ -237,7 +290,7 @@ export default function Header() {
             href="/prestador"
             className="hidden text-sm font-medium text-text-muted transition-colors hover:text-brand-navy sm:inline-flex"
           >
-            Encontre prestadores de serviço
+            Encontre prestadores de servico
           </Link>
           <Link
             href={clientDirectoryHref}
@@ -286,7 +339,9 @@ export default function Header() {
                 size="lg"
                 className="h-10 rounded-md px-6 text-sm font-extrabold"
               >
-                <Link href="/register/professional">Become a Pro</Link>
+                <Link href="/register/professional">
+                  Become a Pro
+                </Link>
               </Button>
             </>
           )}
