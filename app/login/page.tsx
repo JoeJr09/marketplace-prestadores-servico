@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { startTransition, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import Header from "@/components/e/Header";
@@ -16,7 +19,10 @@ type LoginResponse = {
   };
 };
 
-function getRedirectPath(role: NonNullable<LoginResponse["user"]>["role"]) {
+function getRedirectPath(
+  role: NonNullable<LoginResponse["user"]>["role"],
+  requestedRedirect: string | null,
+) {
   if (role === "professional") {
     return "/prestador";
   }
@@ -25,11 +31,19 @@ function getRedirectPath(role: NonNullable<LoginResponse["user"]>["role"]) {
     return "/admin";
   }
 
-  return "/cliente";
+  if (
+    requestedRedirect &&
+    requestedRedirect.startsWith("/prestador")
+  ) {
+    return requestedRedirect;
+  }
+
+  return "/prestador";
 }
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
@@ -75,11 +89,18 @@ export default function LoginPage() {
         return;
       }
 
-      startTransition(() => {
-        router.push(
-          getRedirectPath(data.user.role)
+      const redirectPath =
+        getRedirectPath(
+          data.user.role,
+          searchParams.get("redirect"),
         );
+
+      startTransition(() => {
+        router.replace(redirectPath);
+        router.refresh();
       });
+
+      window.location.href = redirectPath;
     } catch {
       setErrorMessage(
         "Nao foi possivel conectar ao servidor."

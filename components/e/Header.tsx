@@ -147,6 +147,8 @@ export default function Header() {
     : "/login";
   const showFavoritesEntry =
     currentUser?.role === "client";
+  const showClientOrdersEntry =
+    currentUser?.role === "client";
 
   return (
     <header className="border-b border-acode-panel-strong/60 bg-acode-header">
@@ -198,6 +200,16 @@ export default function Header() {
                       className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
                     >
                       Favoritos
+                    </Link>
+                  </SheetClose>
+                ) : null}
+                {showClientOrdersEntry ? (
+                  <SheetClose asChild>
+                    <Link
+                      href="/cliente/pedidos"
+                      className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
+                    >
+                      Meus pedidos
                     </Link>
                   </SheetClose>
                 ) : null}

@@ -1,4 +1,5 @@
 export type ProfessionalDashboardProfile = {
+  professional_id: string;
   profile: {
     id: string;
     full_name: string | null;
@@ -19,6 +20,13 @@ export type ProfessionalDashboardProfile = {
 
 export type ServiceStatus = "Active" | "Draft";
 
+export type ServiceRequestStatus =
+  | "PENDENTE"
+  | "ACEITA"
+  | "RECUSADA"
+  | "CONCLUIDA"
+  | "ABORTADA";
+
 export type ServiceCategory =
   | "Engineering"
   | "Operations"
@@ -34,4 +42,14 @@ export type ServiceCard = {
   description: string;
   tag: string;
   status: ServiceStatus;
+};
+
+export type ServiceRequestCard = {
+  id: string;
+  client_id: string;
+  client_name: string;
+  client_email: string;
+  created_at: string;
+  date_service: string;
+  status: ServiceRequestStatus;
 };
