@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 
-import HeaderCliente from "@/components/e/HeaderCliente";
+import Footer from "@/components/e/Footer";
+import Header from "@/components/e/Header";
+import LogoutButton from "@/components/e/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { verifyAccessToken } from "@/app/lib/jwt";
 import { supabase, supabaseAdmin } from "@/app/lib/supabase";
@@ -54,25 +56,6 @@ async function getClientProfile(id: string) {
   return client as ClientProfile;
 }
 
-async function getCurrentUserProfile(userId: string | null) {
-  if (!userId) {
-    return null;
-  }
-
-  const db = getDatabaseClient();
-  const { data: user, error } = await db
-    .from("profiles")
-    .select("id, full_name, avatar_url")
-    .eq("id", userId)
-    .single();
-
-  if (error || !user) {
-    return null;
-  }
-
-  return user as Pick<ClientProfile, "id" | "full_name" | "avatar_url">;
-}
-
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -113,10 +96,7 @@ export default async function ClienteProfilePage({
 }) {
   const { id } = await params;
   const authenticatedUserId = await getAuthenticatedUserId();
-  const [client, currentUser] = await Promise.all([
-    getClientProfile(id),
-    getCurrentUserProfile(authenticatedUserId),
-  ]);
+  const client = await getClientProfile(id);
 
   if (!client) {
     notFound();
@@ -126,16 +106,21 @@ export default async function ClienteProfilePage({
   const initials = getInitials(client.full_name);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#ffffff_0%,_#eff5f4_42%,_#dee4e3_100%)] text-text-main">
-      <HeaderCliente currentUser={currentUser} />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#ffffff_0%,_#eff5f4_42%,_#dee4e3_100%)] text-text-main">
+      <Header />
 
-      <section className="relative overflow-hidden px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
-        <div className="absolute inset-x-0 top-0 h-64 bg-[linear-gradient(135deg,rgba(4,22,39,0.08),rgba(255,220,195,0.22),rgba(239,245,244,0))]" />
-        <div className="absolute -left-20 top-16 h-44 w-44 rounded-full bg-brand-peach/35 blur-3xl" />
-        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-brand-navy-soft/15 blur-3xl" />
+      <main>
+        <section className="relative overflow-hidden px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
+          <div className="absolute inset-x-0 top-0 h-64 bg-[linear-gradient(135deg,rgba(4,22,39,0.08),rgba(255,220,195,0.22),rgba(239,245,244,0))]" />
+          <div className="absolute -left-20 top-16 h-44 w-44 rounded-full bg-brand-peach/35 blur-3xl" />
+          <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-brand-navy-soft/15 blur-3xl" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.5fr)_380px] lg:items-start">
-          <div className="rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-[0_24px_80px_rgba(4,22,39,0.08)] backdrop-blur sm:p-10 lg:p-12">
+          <div className="relative mx-auto mb-8 flex max-w-7xl justify-end">
+            {isOwner ? <LogoutButton accountType="client" /> : null}
+          </div>
+
+          <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.5fr)_380px] lg:items-start">
+            <div className="rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-[0_24px_80px_rgba(4,22,39,0.08)] backdrop-blur sm:p-10 lg:p-12">
             <div className="inline-flex items-center gap-3">
               <span className="bg-brand-peach px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-brand-brown">
                 Perfil de cliente
@@ -266,7 +251,7 @@ export default async function ClienteProfilePage({
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
                     Sobre mim
                   </p>
-                  <p className="mt-3 max-w-3xl text-lg leading-8 text-text-muted">
+                  <p className="mt-3 max-w-full whitespace-pre-wrap break-words text-lg leading-8 text-text-muted [overflow-wrap:anywhere]">
                     {client.bio}
                   </p>
                 </div>
@@ -297,6 +282,9 @@ export default async function ClienteProfilePage({
           </article>
         </div>
       </section>
-    </main>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

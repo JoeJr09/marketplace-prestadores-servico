@@ -17,6 +17,7 @@ type EditSettingsPanelProps = {
     bio: string | null;
   };
   startInEditMode?: boolean;
+  cancelHref?: string;
 };
 
 function getInitials(name: string) {
@@ -31,6 +32,7 @@ function getInitials(name: string) {
 export function EditSettingsPanel({
   client,
   startInEditMode = false,
+  cancelHref,
 }: EditSettingsPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -66,6 +68,17 @@ export function EditSettingsPanel({
     setDeleteName("");
     setError(null);
     setMessage(null);
+  }
+
+  function handleCancelEdit() {
+    resetFormState();
+
+    if (cancelHref) {
+      router.push(cancelHref);
+      return;
+    }
+
+    setIsEditing(false);
   }
 
   async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -257,10 +270,7 @@ export function EditSettingsPanel({
                 variant="surface"
                 size="sm"
                 disabled={isPending}
-                onClick={() => {
-                  resetFormState();
-                  setIsEditing(false);
-                }}
+                onClick={handleCancelEdit}
               >
                 Cancelar
               </Button>
