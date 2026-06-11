@@ -15,12 +15,17 @@ import Footer from "@/components/e/Footer";
 import Header from "@/components/e/Header";
 import LogoutButton from "@/components/e/LogoutButton";
 import { ServiceRequestForm } from "@/components/e/ServiceRequestForm";
+import {
+  getProfessionalPortalProfileByBusinessName,
+} from "@/app/lib/professional-portal";
 import { verifyAccessToken } from "@/app/lib/jwt";
 import { normalizeBusinessName } from "@/app/lib/professional-slug";
 import {
   supabase,
   supabaseAdmin,
 } from "@/app/lib/supabase";
+import { ProfessionalPortalProfileOverview } from "@/components/professionals/ProfessionalPortalProfileOverview";
+import { ProfessionalPortalShell } from "@/components/professionals/ProfessionalPortalShell";
 import { Button } from "@/components/ui/button";
 
 type AuthenticatedUser = {
@@ -253,6 +258,31 @@ export default async function PrestadorDetailPage({
     await getAcceptedSlots(
       professional.id,
     );
+
+  if (isOwner) {
+    const portalProfile =
+      await getProfessionalPortalProfileByBusinessName(
+        normalizedBusinessName,
+      );
+
+    if (!portalProfile) {
+      notFound();
+    }
+
+    return (
+      <ProfessionalPortalShell
+        professional={portalProfile}
+        activeItem="profile"
+      >
+        <ProfessionalPortalProfileOverview
+          professional={portalProfile}
+          businessName={
+            normalizedBusinessName
+          }
+        />
+      </ProfessionalPortalShell>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-acode-mist text-brand-navy">
