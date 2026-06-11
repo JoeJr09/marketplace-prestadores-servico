@@ -59,6 +59,20 @@ function getProfileHref(
   return `/cliente/${user.id}`;
 }
 
+function getProfessionalServicesHref(
+  user: CurrentUser | null,
+  professionalSlug: string | null,
+) {
+  if (
+    user?.role !== "professional" ||
+    !professionalSlug
+  ) {
+    return null;
+  }
+
+  return `/prestador/${professionalSlug}/service-management`;
+}
+
 export default function Header() {
   const [currentUser, setCurrentUser] =
     useState<CurrentUser | null>(null);
@@ -145,6 +159,11 @@ export default function Header() {
   const clientDirectoryHref = currentUser
     ? "/cliente"
     : "/login";
+  const professionalServicesHref =
+    getProfessionalServicesHref(
+      currentUser,
+      professionalSlug,
+    );
   const showFavoritesEntry =
     currentUser?.role === "client";
   const showClientOrdersEntry =
@@ -231,6 +250,16 @@ export default function Header() {
                     </Link>
                   </SheetClose>
                 ) : null}
+                {professionalServicesHref ? (
+                  <SheetClose asChild>
+                    <Link
+                      href={professionalServicesHref}
+                      className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
+                    >
+                      Servicos
+                    </Link>
+                  </SheetClose>
+                ) : null}
               </nav>
 
               <SheetFooter className="border-t border-acode-panel-strong/60 p-4">
@@ -310,6 +339,14 @@ export default function Header() {
           >
             Encontre clientes
           </Link>
+          {professionalServicesHref ? (
+            <Link
+              href={professionalServicesHref}
+              className="hidden text-sm font-medium text-text-muted transition-colors hover:text-brand-navy md:inline-flex"
+            >
+              Servicos
+            </Link>
+          ) : null}
         </nav>
 
         <div className="flex items-center gap-4">

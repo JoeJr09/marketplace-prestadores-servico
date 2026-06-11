@@ -15,9 +15,7 @@ type LoginResponse = {
     role: "client" | "professional" | "admin";
   };
   professional?: {
-    profile?: {
-      id: string;
-    };
+    business_name?: string | null;
   };
 };
 
@@ -54,11 +52,11 @@ export default function ProfessionalLoginPage() {
         return;
       }
 
-      const professionalProfileId =
-        data.professional?.profile?.id;
+      const businessName =
+        data.professional?.business_name;
       const redirectPath =
-        professionalProfileId
-          ? `/professional/${professionalProfileId}/service-management?tab=requests`
+        businessName
+          ? `/prestador/${businessName}/service-management?tab=requests`
           : "/prestador";
 
       startTransition(() => {
