@@ -7,7 +7,7 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type LogoutButtonProps = {
-  accountType: "client" | "professional";
+  accountType: "client" | "professional" | "admin";
 };
 
 export default function LogoutButton({ accountType }: LogoutButtonProps) {
@@ -43,7 +43,7 @@ export default function LogoutButton({ accountType }: LogoutButtonProps) {
       onClick={handleLogout}
     >
       <LogOut className="size-4" />
-      {isLoggingOut ? "Saindo..." : "Logout"}
+      {isLoggingOut ? "Saindo..." : "Sair"}
     </Button>
   );
 }

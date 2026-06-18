@@ -201,7 +201,7 @@ export default function Header() {
                     href="/"
                     className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
                   >
-                    Home
+                    Início
                   </Link>
                 </SheetClose>
                 <SheetClose asChild>
@@ -209,7 +209,7 @@ export default function Header() {
                     href="/prestador"
                     className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
                   >
-                    Encontre prestadores de servico
+                    Encontre prestadores de serviço
                   </Link>
                 </SheetClose>
                 {showFavoritesEntry ? (
@@ -256,7 +256,7 @@ export default function Header() {
                       href={professionalServicesHref}
                       className="rounded-md px-4 py-3 text-sm font-extrabold text-brand-navy transition hover:bg-acode-panel"
                     >
-                      Servicos
+                      Serviços
                     </Link>
                   </SheetClose>
                 ) : null}
@@ -331,7 +331,7 @@ export default function Header() {
             href="/prestador"
             className="hidden text-sm font-medium text-text-muted transition-colors hover:text-brand-navy sm:inline-flex"
           >
-            Encontre prestadores de servico
+            Encontre prestadores de serviço
           </Link>
           <Link
             href={clientDirectoryHref}
@@ -344,7 +344,7 @@ export default function Header() {
               href={professionalServicesHref}
               className="hidden text-sm font-medium text-text-muted transition-colors hover:text-brand-navy md:inline-flex"
             >
-              Servicos
+              Serviços
             </Link>
           ) : null}
         </nav>
@@ -389,7 +389,7 @@ export default function Header() {
                 className="h-10 rounded-md px-6 text-sm font-extrabold"
               >
                 <Link href="/register/professional">
-                  Become a Pro
+                  Quero anunciar serviços
                 </Link>
               </Button>
             </>

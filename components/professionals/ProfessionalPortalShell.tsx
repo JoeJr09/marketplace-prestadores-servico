@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import Footer from "@/components/e/Footer";
 import Header from "@/components/e/Header";
+import LogoutButton from "@/components/e/LogoutButton";
 import {
   SidebarInset,
   SidebarProvider,
@@ -50,6 +51,9 @@ export function ProfessionalPortalShell({
 
                 <SidebarInset className="bg-transparent">
                   <div className="flex min-h-full flex-col p-5 sm:p-7 lg:p-8 xl:p-10">
+                    <div className="mb-6 flex justify-end">
+                      <LogoutButton accountType="professional" />
+                    </div>
                     {children}
                   </div>
                 </SidebarInset>

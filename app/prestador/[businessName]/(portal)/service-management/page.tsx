@@ -8,6 +8,10 @@ import {
   getProfessionalPortalProfileByBusinessName,
   getProfessionalServiceRequests,
 } from "@/app/lib/professional-portal";
+import {
+  getProfessionalServices,
+  getServiceCategories,
+} from "@/app/lib/professional-services";
 import { ProfessionalPortalShell } from "@/components/professionals/ProfessionalPortalShell";
 import { ServiceManagementWorkspace } from "@/components/professionals/ServiceManagementWorkspace";
 
@@ -60,10 +64,19 @@ export default async function PrestadorServiceManagementPage(
     );
   }
 
-  const serviceRequests =
-    await getProfessionalServiceRequests(
+  const [
+    serviceRequests,
+    categories,
+    services,
+  ] = await Promise.all([
+    getProfessionalServiceRequests(
       professional.professional_id,
-    );
+    ),
+    getServiceCategories(),
+    getProfessionalServices(
+      professional.professional_id,
+    ),
+  ]);
 
   return (
     <ProfessionalPortalShell
@@ -75,6 +88,8 @@ export default async function PrestadorServiceManagementPage(
         serviceRequests={
           serviceRequests
         }
+        categories={categories}
+        initialServices={services}
         activeTab={getActiveTab(
           searchParams.tab,
         )}

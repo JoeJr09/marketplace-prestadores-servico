@@ -1,64 +1,25 @@
 "use client";
 
-import {
-  type FormEvent,
-  useMemo,
-  useState,
-} from "react";
-import {
-  CalendarDays,
-  Clock3,
-  ReceiptText,
-} from "lucide-react";
+import { type FormEvent, useMemo, useState } from "react";
+import { CalendarDays, Clock3, ReceiptText } from "lucide-react";
 
-import { formatCurrency } from "@/app/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 type ServiceRequestFormProps = {
   professionalId: string;
+  serviceId: string;
+  serviceTitle: string;
   unavailableSlots: string[];
 };
 
-function formatCurrencyDigits(
-  digitsOnly: string,
-) {
-  const normalizedDigits =
-    digitsOnly.replace(/\D/g, "");
+const timeOptions = Array.from({ length: 11 }, (_, index) => {
+  const hour = index + 8;
+  return `${String(hour).padStart(2, "0")}:00`;
+});
 
-  if (!normalizedDigits) {
-    return "";
-  }
-
-  const integerValue = Number(
-    normalizedDigits,
-  ) / 100;
-
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    },
-  ).format(integerValue);
-}
-
-const timeOptions = Array.from(
-  { length: 11 },
-  (_, index) => {
-    const hour = index + 8;
-    return `${String(hour).padStart(
-      2,
-      "0",
-    )}:00`;
-  },
-);
-
-function toLocalDateLabel(
-  dateValue: string,
-) {
-  const [year, month, day] =
-    dateValue.split("-");
+function toLocalDateLabel(dateValue: string) {
+  const [year, month, day] = dateValue.split("-");
 
   if (!year || !month || !day) {
     return "";
@@ -69,52 +30,29 @@ function toLocalDateLabel(
 
 export function ServiceRequestForm({
   professionalId,
+  serviceId,
+  serviceTitle,
   unavailableSlots,
 }: ServiceRequestFormProps) {
-  const minServiceDate =
-    new Date()
-      .toISOString()
-      .slice(0, 10);
-  const [isOpen, setIsOpen] =
-    useState(false);
-  const [priceDigits, setPriceDigits] =
-    useState("");
-  const [serviceDate, setServiceDate] =
-    useState("");
-  const [serviceTime, setServiceTime] =
-    useState("");
-  const [pending, setPending] =
-    useState(false);
-  const [message, setMessage] =
-    useState<string | null>(null);
-  const [errorMessage, setErrorMessage] =
-    useState<string | null>(null);
+  const minServiceDate = new Date().toISOString().slice(0, 10);
+  const [isOpen, setIsOpen] = useState(false);
+  const [serviceDate, setServiceDate] = useState("");
+  const [serviceTime, setServiceTime] = useState("");
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const unavailableTimesForDate =
-    useMemo(() => {
-      if (!serviceDate) {
-        return [];
-      }
+  const unavailableTimesForDate = useMemo(() => {
+    if (!serviceDate) {
+      return [];
+    }
 
-      return unavailableSlots
-        .filter((slot) =>
-          slot.startsWith(serviceDate),
-        )
-        .map((slot) => slot.slice(11, 16));
-    }, [serviceDate, unavailableSlots]);
+    return unavailableSlots
+      .filter((slot) => slot.startsWith(serviceDate))
+      .map((slot) => slot.slice(11, 16));
+  }, [serviceDate, unavailableSlots]);
 
-  const selectedPrice =
-    Number(priceDigits) > 0
-      ? formatCurrency(
-          Number(priceDigits) / 100,
-        )
-      : null;
-  const formattedPriceInput =
-    formatCurrencyDigits(priceDigits);
-
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setPending(true);
@@ -122,43 +60,32 @@ export function ServiceRequestForm({
     setErrorMessage(null);
 
     try {
-      const response = await fetch(
-        "/api/service-requests",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            professionalId,
-            requestedPrice:
-              Number(priceDigits) / 100,
-            serviceDate,
-            serviceTime,
-          }),
+      const response = await fetch("/api/service-requests", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          professionalId,
+          serviceId,
+          serviceDate,
+          serviceTime,
+        }),
+      });
 
-      const data =
-        (await response.json()) as {
-          error?: string;
-          message?: string;
-        };
+      const data = (await response.json()) as {
+        error?: string;
+        message?: string;
+      };
 
       if (!response.ok) {
         throw new Error(
-          data.error ??
-            "Nao foi possivel enviar a solicitacao",
+          data.error ?? "Nao foi possivel enviar a solicitacao",
         );
       }
 
-      setMessage(
-        data.message ??
-          "Solicitacao enviada com sucesso",
-      );
-      setPriceDigits("");
+      setMessage(data.message ?? "Solicitacao enviada com sucesso");
       setServiceDate("");
       setServiceTime("");
       setIsOpen(false);
@@ -180,11 +107,9 @@ export function ServiceRequestForm({
         variant="brand"
         size="xl"
         className="rounded-md"
-        onClick={() =>
-          setIsOpen((current) => !current)
-        }
+        onClick={() => setIsOpen((current) => !current)}
       >
-        Solicitar orcamento
+        Solicitar este servico
       </Button>
 
       {isOpen ? (
@@ -196,37 +121,31 @@ export function ServiceRequestForm({
             <ReceiptText className="size-5 text-brand-navy" />
             <div>
               <p className="text-lg font-black tracking-[-0.03em] text-brand-navy">
-                Solicitar horario
+                Solicitar atendimento
               </p>
               <p className="text-sm text-text-muted">
-                Informe o valor combinado e escolha dia e hora disponiveis.
+                Agende um horario para o servico {serviceTitle}.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            <label className="space-y-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
-                Valor
-              </span>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={formattedPriceInput}
-                onChange={(event) =>
-                  setPriceDigits(
-                    event.target.value.replace(
-                      /\D/g,
-                      "",
-                    ),
-                  )
-                }
-                className="h-12 rounded-2xl border-border/70 bg-surface-muted"
-                placeholder="0,00"
-                required
-              />
-            </label>
+          <div className="mt-5 rounded-2xl bg-surface-muted/80 px-4 py-3 text-sm text-brand-steel-deep">
+            <p>
+              Servico selecionado:{" "}
+              <span className="font-black text-brand-navy">{serviceTitle}</span>
+            </p>
+            {serviceDate ? (
+              <p className="mt-1">
+                Data escolhida:{" "}
+                <span className="font-black text-brand-navy">
+                  {toLocalDateLabel(serviceDate)}
+                  {serviceTime ? ` as ${serviceTime}` : ""}
+                </span>
+              </p>
+            ) : null}
+          </div>
 
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
               <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
                 <CalendarDays className="size-3.5" />
@@ -238,9 +157,7 @@ export function ServiceRequestForm({
                 min={minServiceDate}
                 lang="pt-BR"
                 onChange={(event) => {
-                  setServiceDate(
-                    event.target.value,
-                  );
+                  setServiceDate(event.target.value);
                   setServiceTime("");
                 }}
                 className="h-12 rounded-2xl border-border/70 bg-surface-muted"
@@ -255,22 +172,13 @@ export function ServiceRequestForm({
               </span>
               <select
                 value={serviceTime}
-                onChange={(event) =>
-                  setServiceTime(
-                    event.target.value,
-                  )
-                }
+                onChange={(event) => setServiceTime(event.target.value)}
                 className="h-12 w-full rounded-2xl border border-border/70 bg-surface-muted px-4 text-sm font-medium text-brand-navy outline-none focus:ring-2 focus:ring-brand-navy/15"
                 required
               >
-                <option value="">
-                  Selecione
-                </option>
+                <option value="">Selecione</option>
                 {timeOptions.map((timeOption) => {
-                  const unavailable =
-                    unavailableTimesForDate.includes(
-                      timeOption,
-                    );
+                  const unavailable = unavailableTimesForDate.includes(timeOption);
 
                   return (
                     <option
@@ -278,9 +186,7 @@ export function ServiceRequestForm({
                       value={timeOption}
                       disabled={unavailable}
                     >
-                      {unavailable
-                        ? `${timeOption} - indisponivel`
-                        : timeOption}
+                      {unavailable ? `${timeOption} - indisponivel` : timeOption}
                     </option>
                   );
                 })}
@@ -288,40 +194,11 @@ export function ServiceRequestForm({
             </label>
           </div>
 
-          {selectedPrice || serviceDate ? (
-            <div className="mt-5 rounded-2xl bg-surface-muted/80 px-4 py-3 text-sm text-brand-steel-deep">
-              {selectedPrice ? (
-                <p>
-                  Valor informado:{" "}
-                  <span className="font-black text-brand-navy">
-                    {selectedPrice}
-                  </span>
-                </p>
-              ) : null}
-              {serviceDate ? (
-                <p className="mt-1">
-                  Data escolhida:{" "}
-                  <span className="font-black text-brand-navy">
-                    {toLocalDateLabel(
-                      serviceDate,
-                    )}
-                    {serviceTime
-                      ? ` as ${serviceTime}`
-                      : ""}
-                  </span>
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-
-          {serviceDate &&
-          unavailableTimesForDate.length > 0 ? (
+          {serviceDate && unavailableTimesForDate.length > 0 ? (
             <div className="mt-5 rounded-2xl border border-brand-orange/20 bg-brand-orange/8 px-4 py-3 text-sm text-brand-brown">
               Horarios indisponiveis neste dia:{" "}
               <span className="font-semibold">
-                {unavailableTimesForDate.join(
-                  ", ",
-                )}
+                {unavailableTimesForDate.join(", ")}
               </span>
             </div>
           ) : null}
@@ -339,9 +216,7 @@ export function ServiceRequestForm({
               className="rounded-md"
               disabled={pending}
             >
-              {pending
-                ? "Enviando..."
-                : "Enviar solicitacao"}
+              {pending ? "Enviando..." : "Enviar solicitacao"}
             </Button>
             <Button
               type="button"
@@ -357,9 +232,7 @@ export function ServiceRequestForm({
       ) : null}
 
       {message ? (
-        <p className="mt-4 text-sm font-medium text-brand-brown">
-          {message}
-        </p>
+        <p className="mt-4 text-sm font-medium text-brand-brown">{message}</p>
       ) : null}
     </div>
   );

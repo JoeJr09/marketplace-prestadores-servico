@@ -19,33 +19,33 @@ type RegisterResponse = {
 const passwordChecks = [
   {
     key: "uppercase",
-    label: "Uppercase letter",
+    label: "Uma letra maiúscula",
     test: (value: string) => /[A-Z]/.test(value),
   },
   {
     key: "lowercase",
-    label: "Lowercase letter",
+    label: "Uma letra minúscula",
     test: (value: string) => /[a-z]/.test(value),
   },
   {
     key: "number",
-    label: "Number",
+    label: "Um número",
     test: (value: string) => /[0-9]/.test(value),
   },
   {
     key: "special",
-    label: "Special character",
+    label: "Um caractere especial",
     test: (value: string) => /[^A-Za-z0-9]/.test(value),
   },
   {
     key: "match",
-    label: "Passwords match",
+    label: "As senhas coincidem",
     test: (value: string, confirmPassword: string) =>
       confirmPassword.length > 0 && value === confirmPassword,
   },
   {
     key: "length",
-    label: "At least 8 characters",
+    label: "Pelo menos 8 caracteres",
     test: (value: string) => value.length >= 8,
   },
 ] as const;
@@ -205,9 +205,7 @@ export default function ProfessionalRegisterPage() {
         const messages = uniqueMessages([...detailMessages, data.error]);
 
         setErrorMessages(
-          messages.length > 0
-            ? messages
-            : ["Nao foi possivel concluir o cadastro."],
+          messages.length > 0 ? messages : ["Não foi possível concluir o cadastro."],
         );
         return;
       }
@@ -216,7 +214,7 @@ export default function ProfessionalRegisterPage() {
         router.push("/login/professional");
       });
     } catch {
-      setErrorMessages(["Nao foi possivel conectar ao servidor."]);
+      setErrorMessages(["Não foi possível conectar ao servidor."]);
     } finally {
       setIsSubmitting(false);
     }
@@ -231,16 +229,16 @@ export default function ProfessionalRegisterPage() {
 
             <div className="relative z-10 space-y-10">
               <div className="inline-flex rounded-sm bg-brand-brown px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-brand-peach">
-                Provider Network
+                Rede profissional
               </div>
 
               <div className="max-w-md space-y-8">
                 <h1 className="text-6xl font-black uppercase leading-[0.98] tracking-tighter text-white">
-                  Build your service presence.
+                  Mostre seus serviços.
                 </h1>
                 <p className="max-w-sm text-[1.95rem] leading-8 text-brand-steel">
-                  Join the marketplace, receive client requests, and manage
-                  your professional profile.
+                  Entre no marketplace, receba solicitações de clientes e
+                  gerencie sua presença profissional em um único lugar.
                 </p>
               </div>
             </div>
@@ -250,13 +248,13 @@ export default function ProfessionalRegisterPage() {
                 <span className="inline-flex size-7 items-center justify-center rounded-full border border-brand-peach text-brand-peach">
                   *
                 </span>
-                <span>Verified marketplace</span>
+                <span>Marketplace verificado</span>
               </div>
               <div className="flex items-center gap-4 text-lg uppercase tracking-[0.18em]">
                 <span className="inline-flex size-7 items-center justify-center rounded-full border border-brand-peach text-brand-peach">
                   #
                 </span>
-                <span>Professional dashboard</span>
+                <span>Painel profissional</span>
               </div>
             </div>
           </div>
@@ -265,10 +263,10 @@ export default function ProfessionalRegisterPage() {
             <div className="mx-auto w-full max-w-md">
               <div className="mb-10 space-y-3">
                 <h2 className="text-4xl font-black uppercase tracking-[-0.04em] text-text-main sm:text-[2.65rem]">
-                  Provider Registration
+                  Cadastro profissional
                 </h2>
                 <p className="text-lg text-text-muted">
-                  Enter your details to create your professional account.
+                  Preencha seus dados para criar sua conta de prestador.
                 </p>
               </div>
 
@@ -278,17 +276,15 @@ export default function ProfessionalRegisterPage() {
                     htmlFor="full_name"
                     className="block text-xs font-bold uppercase tracking-[0.26em] text-text-main"
                   >
-                    Full name
+                    Nome completo
                   </label>
                   <Input
                     id="full_name"
                     type="text"
                     autoComplete="name"
-                    placeholder="Architecture Smith"
+                    placeholder="Nome Sobrenome"
                     value={formData.full_name}
-                    onChange={(event) =>
-                      updateField("full_name", event.target.value)
-                    }
+                    onChange={(event) => updateField("full_name", event.target.value)}
                     className="h-14 rounded-2xl border-transparent bg-surface-muted px-5 text-base text-text-main placeholder:text-brand-navy-soft focus-visible:border-brand-navy-soft focus-visible:ring-brand-navy-soft/30"
                     required
                   />
@@ -299,13 +295,13 @@ export default function ProfessionalRegisterPage() {
                     htmlFor="business_name"
                     className="block text-xs font-bold uppercase tracking-[0.26em] text-text-main"
                   >
-                    Business name
+                    Nome da empresa
                   </label>
                   <Input
                     id="business_name"
                     type="text"
                     autoComplete="organization"
-                    placeholder="acode-studio"
+                    placeholder="minha-empresa"
                     value={formData.business_name}
                     onChange={(event) =>
                       updateField(
@@ -323,7 +319,7 @@ export default function ProfessionalRegisterPage() {
                       htmlFor="city"
                       className="block text-xs font-bold uppercase tracking-[0.26em] text-text-main"
                     >
-                      City
+                      Cidade
                     </label>
                     <Input
                       id="city"
@@ -341,7 +337,7 @@ export default function ProfessionalRegisterPage() {
                       htmlFor="country"
                       className="block text-xs font-bold uppercase tracking-[0.26em] text-text-main"
                     >
-                      Country
+                      País
                     </label>
                     <Input
                       id="country"
@@ -349,9 +345,7 @@ export default function ProfessionalRegisterPage() {
                       autoComplete="country-name"
                       placeholder="Brasil"
                       value={formData.country}
-                      onChange={(event) =>
-                        updateField("country", event.target.value)
-                      }
+                      onChange={(event) => updateField("country", event.target.value)}
                       className="h-14 rounded-2xl border-transparent bg-surface-muted px-5 text-base text-text-main placeholder:text-brand-navy-soft focus-visible:border-brand-navy-soft focus-visible:ring-brand-navy-soft/30"
                     />
                   </div>
@@ -362,13 +356,13 @@ export default function ProfessionalRegisterPage() {
                     htmlFor="email"
                     className="block text-xs font-bold uppercase tracking-[0.26em] text-text-main"
                   >
-                    Email address
+                    Endereço de e-mail
                   </label>
                   <Input
                     id="email"
                     type="email"
                     autoComplete="email"
-                    placeholder="name@company.com"
+                    placeholder="nome@empresa.com"
                     value={formData.email}
                     onChange={(event) => updateField("email", event.target.value)}
                     className="h-14 rounded-2xl border-transparent bg-surface-muted px-5 text-base text-text-main placeholder:text-brand-navy-soft focus-visible:border-brand-navy-soft focus-visible:ring-brand-navy-soft/30"
@@ -381,7 +375,7 @@ export default function ProfessionalRegisterPage() {
                     htmlFor="phone"
                     className="block text-xs font-bold uppercase tracking-[0.26em] text-text-main"
                   >
-                    Phone number
+                    Telefone
                   </label>
                   <InputPhone
                     id="phone"
@@ -401,24 +395,22 @@ export default function ProfessionalRegisterPage() {
                 >
                   <PasswordField
                     id="password"
-                    label="Password"
+                    label="Senha"
                     value={formData.password}
                     onChange={(value) => updateField("password", value)}
-                    placeholder="Enter your password"
+                    placeholder="Digite sua senha"
                     visible={showPassword}
-                    onToggleVisibility={() =>
-                      setShowPassword((current) => !current)
-                    }
+                    onToggleVisibility={() => setShowPassword((current) => !current)}
                     autoComplete="new-password"
                     onFocus={() => setShowPasswordHelper(true)}
                   />
 
                   <PasswordField
                     id="confirm_password"
-                    label="Confirm password"
+                    label="Confirmar senha"
                     value={formData.confirm_password}
                     onChange={(value) => updateField("confirm_password", value)}
-                    placeholder="Repeat your password"
+                    placeholder="Repita sua senha"
                     visible={showConfirmPassword}
                     onToggleVisibility={() =>
                       setShowConfirmPassword((current) => !current)
@@ -457,17 +449,17 @@ export default function ProfessionalRegisterPage() {
                   className="mt-2 w-full uppercase tracking-[0.18em]"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Creating account..." : "Create provider"}
+                  {isSubmitting ? "Criando conta..." : "Criar conta profissional"}
                 </Button>
               </form>
 
               <div className="mt-8 text-center text-base text-text-subtle">
-                Already have a provider account?{" "}
+                Já tem conta profissional?{" "}
                 <Link
                   href="/login/professional"
                   className="font-semibold text-text-main transition-colors hover:text-brand-orange"
                 >
-                  Log in here
+                  Entre aqui
                 </Link>
               </div>
             </div>

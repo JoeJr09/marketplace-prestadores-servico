@@ -1,6 +1,7 @@
 import Footer from "@/components/e/Footer";
 import Header from "@/components/e/Header";
 import { ProfessionalsDirectory } from "@/components/e/ProfessionalsDirectory";
+import { getProfessionalServicesByIds } from "@/app/lib/professional-services";
 import {
   supabase,
   supabaseAdmin,
@@ -20,6 +21,7 @@ type ProfessionalCard = {
     full_name: string | null;
     avatar_url: string | null;
   };
+  service_tags: string[];
 };
 
 const professionalSelect = `
@@ -57,6 +59,14 @@ async function getProfessionals() {
     return [];
   }
 
+  const professionalIds = data.map((professional) => professional.id);
+  const servicesByProfessional = await getProfessionalServicesByIds(
+    professionalIds,
+    {
+      activeOnly: true,
+    },
+  );
+
   return data.map((professional) => {
     const profile = Array.isArray(
       professional.profiles,
@@ -85,6 +95,13 @@ async function getProfessionals() {
         avatar_url:
           profile?.avatar_url ?? null,
       },
+      service_tags: Array.from(
+        new Set(
+          (servicesByProfessional.get(
+            professional.id,
+          ) ?? []).map((service) => service.category.name),
+        ),
+      ),
     } satisfies ProfessionalCard;
   });
 }
@@ -100,11 +117,11 @@ export default async function PrestadorPage() {
       <main className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
         <div className="mb-10">
           <h1 className="text-4xl font-black tracking-[-0.06em] sm:text-5xl">
-            Encontre um prestador de servicos
+            Encontre um prestador de serviços
           </h1>
           <p className="mt-3 max-w-2xl text-base text-text-muted">
             Prestadores reais cadastrados no Supabase. Para abrir detalhes de um
-            profissional especifico, entre com sua conta de cliente.
+            profissional específico, entre com sua conta de cliente.
           </p>
         </div>
 
