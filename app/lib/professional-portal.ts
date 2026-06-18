@@ -59,7 +59,7 @@ type CalendarRequestRecord = {
   id: string;
   created_at: string;
   id_cliente: string;
-  id_servico: string | null;
+  id_service: string | null;
   date_service: string;
   status: string;
 };
@@ -295,10 +295,10 @@ export async function getProfessionalServiceRequests(
   const {
     data: requests,
     error,
-  } = await db
+    } = await db
       .from("calendar")
       .select(
-      "id, created_at, id_cliente, id_servico, date_service, status",
+      "id, created_at, id_cliente, id_service, date_service, status",
     )
     .eq("id_professional", professionalId)
     .order("created_at", {
@@ -332,7 +332,7 @@ export async function getProfessionalServiceRequests(
   const serviceIds = Array.from(
     new Set(
       requests
-        .map((request) => request.id_servico)
+        .map((request) => request.id_service)
         .filter(
           (serviceId): serviceId is string =>
             typeof serviceId === "string",
@@ -404,8 +404,8 @@ export async function getProfessionalServiceRequests(
         request.id_cliente,
       );
     const service =
-      request.id_servico
-        ? servicesById.get(request.id_servico)
+      request.id_service
+        ? servicesById.get(request.id_service)
         : null;
 
     return {
@@ -417,7 +417,7 @@ export async function getProfessionalServiceRequests(
       client_email:
         client?.email ?? "",
       service_id:
-        request.id_servico,
+        request.id_service,
       service_title:
         service?.title ?? null,
       service_category_name:

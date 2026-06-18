@@ -36,7 +36,7 @@ type ClientRequestRecord = {
   date_service: string;
   status: string;
   id_professional: string;
-  id_servico: string | null;
+  id_service: string | null;
 };
 
 type ProfessionalLookup = {
@@ -121,7 +121,7 @@ async function getClientOrders(clientId: string) {
   const db = getDatabaseClient();
   const { data: requests, error: requestsError } = await db
     .from("calendar")
-    .select("id, created_at, date_service, status, id_professional, id_servico")
+    .select("id, created_at, date_service, status, id_professional, id_service")
     .eq("id_cliente", clientId)
     .order("created_at", {
       ascending: false,
@@ -145,7 +145,7 @@ async function getClientOrders(clientId: string) {
   const serviceIds = Array.from(
     new Set(
       requests
-        .map((request) => request.id_servico)
+        .map((request) => request.id_service)
         .filter((serviceId): serviceId is string => typeof serviceId === "string"),
     ),
   );
@@ -197,8 +197,8 @@ async function getClientOrders(clientId: string) {
     const profile = Array.isArray(professional?.profiles)
       ? professional?.profiles[0]
       : professional?.profiles;
-    const service = request.id_servico
-      ? servicesById.get(request.id_servico)
+    const service = request.id_service
+      ? servicesById.get(request.id_service)
       : null;
     const status = allowedStatuses.has(request.status as ClientRequestStatus)
       ? (request.status as ClientRequestStatus)
