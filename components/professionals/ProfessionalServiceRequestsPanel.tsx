@@ -1,14 +1,11 @@
 "use client";
 
-import {
-  type Dispatch,
-  type SetStateAction,
-  useState,
-} from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import {
   CalendarDays,
   Clock3,
   FileText,
+  ReceiptText,
   UserRound,
 } from "lucide-react";
 
@@ -21,28 +18,19 @@ import type {
 type ProfessionalServiceRequestsPanelProps = {
   professional: ProfessionalDashboardProfile;
   requests: ServiceRequestCard[];
-  onRequestsChange: Dispatch<
-    SetStateAction<ServiceRequestCard[]>
-  >;
+  onRequestsChange: Dispatch<SetStateAction<ServiceRequestCard[]>>;
 };
 
-function formatDateTime(
-  value: string,
-) {
+function formatDateTime(value: string) {
   const parsedDate = new Date(value);
 
-  return new Intl.DateTimeFormat(
-    "pt-BR",
-    {
-      dateStyle: "short",
-      timeStyle: "short",
-    },
-  ).format(parsedDate);
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(parsedDate);
 }
 
-function getStatusLabel(
-  status: ServiceRequestCard["status"],
-) {
+function getStatusLabel(status: ServiceRequestCard["status"]) {
   if (status === "ACEITA") {
     return "Aceita";
   }
@@ -62,9 +50,7 @@ function getStatusLabel(
   return "Pendente";
 }
 
-function getStatusClassName(
-  status: ServiceRequestCard["status"],
-) {
+function getStatusClassName(status: ServiceRequestCard["status"]) {
   if (status === "ACEITA") {
     return "bg-brand-peach text-brand-brown";
   }
@@ -89,61 +75,44 @@ export function ProfessionalServiceRequestsPanel({
   requests,
   onRequestsChange,
 }: ProfessionalServiceRequestsPanelProps) {
-  const [pendingIds, setPendingIds] =
-    useState<string[]>([]);
-  const [errorMessage, setErrorMessage] =
-    useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const pendingCount = requests.filter(
-    (request) =>
-      request.status === "PENDENTE" ||
-      request.status === "ACEITA",
+    (request) => request.status === "PENDENTE" || request.status === "ACEITA",
   ).length;
 
   async function updateRequest(
     requestId: string,
-    action:
-      | "accept"
-      | "reject"
-      | "complete"
-      | "abort",
+    action: "accept" | "reject" | "complete" | "abort",
   ) {
     setErrorMessage(null);
-    setPendingIds((currentPendingIds) => [
-      ...currentPendingIds,
-      requestId,
-    ]);
+    setPendingIds((currentPendingIds) => [...currentPendingIds, requestId]);
 
     try {
-      const response = await fetch(
-        `/api/service-requests/${requestId}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            action,
-          }),
+      const response = await fetch(`/api/service-requests/${requestId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          action,
+        }),
+      });
 
-      const data =
-        (await response.json()) as {
-          error?: string;
-          request?: {
-            id: string;
-            status: ServiceRequestCard["status"];
-            date_service: string;
-          };
+      const data = (await response.json()) as {
+        error?: string;
+        request?: {
+          id: string;
+          status: ServiceRequestCard["status"];
+          date_service: string;
         };
+      };
 
       if (!response.ok || !data.request) {
         throw new Error(
-          data.error ??
-            "Nao foi possivel atualizar a solicitacao",
+          data.error ?? "Nao foi possivel atualizar a solicitacao",
         );
       }
 
@@ -159,8 +128,7 @@ export function ProfessionalServiceRequestsPanel({
           if (
             action === "accept" &&
             request.status === "PENDENTE" &&
-            request.date_service ===
-              data.request.date_service
+            request.date_service === data.request.date_service
           ) {
             return {
               ...request,
@@ -179,10 +147,7 @@ export function ProfessionalServiceRequestsPanel({
       );
     } finally {
       setPendingIds((currentPendingIds) =>
-        currentPendingIds.filter(
-          (pendingId) =>
-            pendingId !== requestId,
-        ),
+        currentPendingIds.filter((pendingId) => pendingId !== requestId),
       );
     }
   }
@@ -195,10 +160,14 @@ export function ProfessionalServiceRequestsPanel({
             Portal do prestador
           </p>
           <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-brand-navy">
-            Meus Servicos
+            Solicitações recebidas
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-text-muted">
-            Solicitacoes recebidas por {professional.business_name ?? professional.profile.full_name ?? "este prestador"}.
+            Pedidos enviados para{" "}
+            {professional.business_name ??
+              professional.profile.full_name ??
+              "este prestador"}
+            .
           </p>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-steel-deep">
@@ -220,7 +189,8 @@ export function ProfessionalServiceRequestsPanel({
               Nenhuma solicitacao por enquanto
             </p>
             <p className="mt-2 text-sm leading-7 text-text-muted">
-              Quando um cliente enviar um horario, ele aparecera aqui para aceite ou recusa.
+              Quando um cliente enviar um horario, ele aparecera aqui para
+              aceite ou recusa.
             </p>
           </div>
         ) : (
@@ -246,27 +216,36 @@ export function ProfessionalServiceRequestsPanel({
                 <span
                   className={[
                     "inline-flex w-max rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em]",
-                    getStatusClassName(
-                      request.status,
-                    ),
+                    getStatusClassName(request.status),
                   ].join(" ")}
                 >
-                  {getStatusLabel(
-                    request.status,
-                  )}
+                  {getStatusLabel(request.status)}
                 </span>
               </div>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                <div className="rounded-2xl bg-white/70 p-4 md:col-span-1">
+                  <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
+                    <ReceiptText className="size-3.5" />
+                    Servico
+                  </p>
+                  <p className="mt-2 text-lg font-black text-brand-navy">
+                    {request.service_title ?? "Servico nao identificado"}
+                  </p>
+                  {request.service_category_name ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-brown">
+                      {request.service_category_name}
+                    </p>
+                  ) : null}
+                </div>
+
                 <div className="rounded-2xl bg-white/70 p-4">
                   <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
                     <CalendarDays className="size-3.5" />
                     Agendamento
                   </p>
                   <p className="mt-2 text-lg font-black text-brand-navy">
-                    {formatDateTime(
-                      request.date_service,
-                    )}
+                    {formatDateTime(request.date_service)}
                   </p>
                 </div>
 
@@ -276,9 +255,7 @@ export function ProfessionalServiceRequestsPanel({
                     Solicitado em
                   </p>
                   <p className="mt-2 text-lg font-black text-brand-navy">
-                    {formatDateTime(
-                      request.created_at,
-                    )}
+                    {formatDateTime(request.created_at)}
                   </p>
                 </div>
               </div>
@@ -289,15 +266,8 @@ export function ProfessionalServiceRequestsPanel({
                     type="button"
                     variant="brand"
                     className="rounded-md"
-                    disabled={pendingIds.includes(
-                      request.id,
-                    )}
-                    onClick={() =>
-                      void updateRequest(
-                        request.id,
-                        "accept",
-                      )
-                    }
+                    disabled={pendingIds.includes(request.id)}
+                    onClick={() => void updateRequest(request.id, "accept")}
                   >
                     Aceitar
                   </Button>
@@ -305,15 +275,8 @@ export function ProfessionalServiceRequestsPanel({
                     type="button"
                     variant="surface"
                     className="rounded-md"
-                    disabled={pendingIds.includes(
-                      request.id,
-                    )}
-                    onClick={() =>
-                      void updateRequest(
-                        request.id,
-                        "reject",
-                      )
-                    }
+                    disabled={pendingIds.includes(request.id)}
+                    onClick={() => void updateRequest(request.id, "reject")}
                   >
                     Recusar
                   </Button>
@@ -326,15 +289,8 @@ export function ProfessionalServiceRequestsPanel({
                     type="button"
                     variant="brand"
                     className="rounded-md"
-                    disabled={pendingIds.includes(
-                      request.id,
-                    )}
-                    onClick={() =>
-                      void updateRequest(
-                        request.id,
-                        "complete",
-                      )
-                    }
+                    disabled={pendingIds.includes(request.id)}
+                    onClick={() => void updateRequest(request.id, "complete")}
                   >
                     Concluir
                   </Button>
@@ -342,15 +298,8 @@ export function ProfessionalServiceRequestsPanel({
                     type="button"
                     variant="surface"
                     className="rounded-md"
-                    disabled={pendingIds.includes(
-                      request.id,
-                    )}
-                    onClick={() =>
-                      void updateRequest(
-                        request.id,
-                        "abort",
-                      )
-                    }
+                    disabled={pendingIds.includes(request.id)}
+                    onClick={() => void updateRequest(request.id, "abort")}
                   >
                     Abortar
                   </Button>

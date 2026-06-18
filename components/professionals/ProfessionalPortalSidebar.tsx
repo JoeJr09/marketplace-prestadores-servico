@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  BriefcaseBusiness,
-  Settings2,
-} from "lucide-react";
+import { BriefcaseBusiness, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,13 +28,12 @@ type ProfessionalPortalSidebarProps = {
 const navItems = [
   {
     label: "Perfil",
-    href: (businessName: string) =>
-      `/prestador/${businessName}`,
+    href: (businessName: string) => `/prestador/${businessName}`,
     icon: Settings2,
     item: "profile" as const,
   },
   {
-    label: "Servicos",
+    label: "Serviços",
     href: (businessName: string) =>
       `/prestador/${businessName}/service-management`,
     icon: BriefcaseBusiness,
@@ -53,18 +49,14 @@ export function ProfessionalPortalSidebar({
   isVerified,
 }: ProfessionalPortalSidebarProps) {
   return (
-    <Sidebar
-      variant="inset"
-      collapsible="icon"
-      className="border-r-0"
-    >
+    <Sidebar variant="inset" collapsible="icon" className="border-r-0">
       <SidebarHeader className="gap-5 px-4 py-5 lg:px-5 lg:py-6">
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.32em] text-brand-navy">
             Acode Aqui
           </p>
           <p className="mt-1 text-[10px] uppercase tracking-[0.24em] text-text-subtle">
-            Portal do Prestador
+            Portal do prestador
           </p>
         </div>
       </SidebarHeader>
@@ -77,23 +69,15 @@ export function ProfessionalPortalSidebar({
                 const Icon = item.icon;
 
                 return (
-                  <SidebarMenuItem
-                    key={item.label}
-                  >
+                  <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
                       size="lg"
-                      isActive={
-                        activeItem === item.item
-                      }
+                      isActive={activeItem === item.item}
                       tooltip={item.label}
                       className="rounded-2xl px-4 text-[11px] font-semibold uppercase tracking-[0.22em] data-[active=true]:bg-brand-navy data-[active=true]:text-white"
                     >
-                      <Link
-                        href={item.href(
-                          businessName,
-                        )}
-                      >
+                      <Link href={item.href(businessName)}>
                         <Icon className="size-4" />
                         <span>{item.label}</span>
                       </Link>
@@ -116,14 +100,12 @@ export function ProfessionalPortalSidebar({
                   {rating?.toFixed(1) ?? "0.0"}
                 </p>
                 <p className="mt-1 text-sm text-text-muted">
-                  {totalReviews ?? 0} reviews
+                  {totalReviews ?? 0} avaliações
                 </p>
               </div>
 
               <div className="rounded-2xl bg-brand-peach px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-brown">
-                {isVerified
-                  ? "Verificado"
-                  : "Em analise"}
+                {isVerified ? "Verificado" : "Em análise"}
               </div>
             </div>
           </SidebarGroupContent>
@@ -133,13 +115,13 @@ export function ProfessionalPortalSidebar({
       <SidebarFooter className="mt-auto px-3 pb-5">
         <div className="rounded-[1.75rem] bg-brand-steel-mid p-5 text-white shadow-[0_20px_50px_rgba(26,43,60,0.25)]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-            Servicos
+            Serviços
           </p>
           <p className="mt-3 text-lg font-black tracking-[-0.03em]">
-            Organize seu catalogo
+            Organize seu catálogo
           </p>
           <p className="mt-2 text-sm leading-6 text-white/72">
-            Centralize perfil, pedidos e servicos em uma navegação so.
+            Centralize perfil, pedidos e serviços em uma navegação só.
           </p>
           <Button
             asChild
@@ -147,10 +129,8 @@ export function ProfessionalPortalSidebar({
             variant="brand"
             className="mt-5 w-full rounded-2xl border border-white/10 bg-brand-orange text-white hover:bg-brand-orange/90"
           >
-            <Link
-              href={`/prestador/${businessName}/service-management`}
-            >
-              Abrir servicos
+            <Link href={`/prestador/${businessName}/service-management`}>
+              Abrir serviços
             </Link>
           </Button>
         </div>

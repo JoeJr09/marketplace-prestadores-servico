@@ -59,6 +59,7 @@ type CalendarRequestRecord = {
   id: string;
   created_at: string;
   id_cliente: string;
+  id_servico: string | null;
   date_service: string;
   status: string;
 };
@@ -295,9 +296,9 @@ export async function getProfessionalServiceRequests(
     data: requests,
     error,
   } = await db
-    .from("calendar")
-    .select(
-      "id, created_at, id_cliente, date_service, status",
+      .from("calendar")
+      .select(
+      "id, created_at, id_cliente, id_servico, date_service, status",
     )
     .eq("id_professional", professionalId)
     .order("created_at", {
@@ -328,6 +329,16 @@ export async function getProfessionalServiceRequests(
       email: string;
     }
   >();
+  const serviceIds = Array.from(
+    new Set(
+      requests
+        .map((request) => request.id_servico)
+        .filter(
+          (serviceId): serviceId is string =>
+            typeof serviceId === "string",
+        ),
+    ),
+  );
 
   if (clientIds.length > 0) {
     const {
@@ -352,6 +363,39 @@ export async function getProfessionalServiceRequests(
     }
   }
 
+  const servicesById = new Map<
+    string,
+    {
+      title: string;
+      categoryName: string | null;
+    }
+  >();
+
+  if (serviceIds.length > 0) {
+    const {
+      data: services,
+      error: servicesError,
+    } = await db
+      .from("services")
+      .select(
+        "id, title, categories(name)",
+      )
+      .in("id", serviceIds);
+
+    if (!servicesError && services) {
+      services.forEach((service) => {
+        const category = Array.isArray(service.categories)
+          ? service.categories[0]
+          : service.categories;
+
+        servicesById.set(service.id, {
+          title: service.title,
+          categoryName: category?.name ?? null,
+        });
+      });
+    }
+  }
+
   return (
     requests as CalendarRequestRecord[]
   ).map((request) => {
@@ -359,6 +403,10 @@ export async function getProfessionalServiceRequests(
       clientsById.get(
         request.id_cliente,
       );
+    const service =
+      request.id_servico
+        ? servicesById.get(request.id_servico)
+        : null;
 
     return {
       id: request.id,
@@ -368,6 +416,12 @@ export async function getProfessionalServiceRequests(
         "Cliente sem nome",
       client_email:
         client?.email ?? "",
+      service_id:
+        request.id_servico,
+      service_title:
+        service?.title ?? null,
+      service_category_name:
+        service?.categoryName ?? null,
       created_at:
         request.created_at,
       date_service:

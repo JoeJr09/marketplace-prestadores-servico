@@ -12,25 +12,25 @@ export default function Footer() {
             Acode Aqui
           </Link>
           <p className="mt-3 text-xs uppercase tracking-[0.22em] text-white/64">
-            © 2024 Acode Aqui. All rights reserved.
+            © 2024 Acode Aqui. Todos os direitos reservados.
           </p>
         </div>
 
         <nav className="flex flex-wrap gap-x-9 gap-y-4 text-xs uppercase tracking-[0.28em] text-white/58">
           <Link href="/prestador" className="transition hover:text-white">
-            Find a Professional
+            Encontrar prestador
           </Link>
           <Link
             href="/register/professional"
             className="transition hover:text-white"
           >
-            Offer Services
+            Oferecer serviços
           </Link>
           <Link href="/cliente" className="transition hover:text-white">
             Encontre clientes
           </Link>
           <Link href="/login" className="transition hover:text-white">
-            Help Center
+            Central de ajuda
           </Link>
         </nav>
       </div>

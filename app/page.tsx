@@ -16,19 +16,19 @@ export default function Home() {
         <section className="relative mx-auto grid min-h-[calc(100vh-5rem)] max-w-7xl items-center gap-12 px-6 py-14 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:px-10 lg:py-20">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.42em] text-hero-silver">
-              Our Blueprint
+              Nosso ecossistema
             </p>
 
             <h1 className="mt-7 text-6xl font-black leading-[0.96] tracking-[-0.07em] text-white sm:text-7xl lg:text-8xl">
-              Built for
+              Feito para
               <br />
-              Precision.
+              precisão.
             </h1>
 
             <p className="mt-8 max-w-xl text-lg leading-8 text-brand-steel sm:text-xl sm:leading-9">
-              Whether you&apos;re looking to hire the best or looking to grow
-              your professional practice, Acode Aqui provides the structural
-              integrity for modern service commerce.
+              Seja para contratar com confiança ou ampliar sua atuação
+              profissional, a Acode Aqui oferece a base certa para conectar
+              serviços, reputação e oportunidade em um só lugar.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -38,7 +38,7 @@ export default function Home() {
                 className="rounded-md bg-brand-brown-rich px-8 font-black text-brand-orange hover:bg-brand-brown"
               >
                 <Link href="/login/professional">
-                  I&apos;m a Professional
+                  Sou prestador
                   <ArrowRight className="size-5" />
                 </Link>
               </Button>
@@ -49,7 +49,7 @@ export default function Home() {
                 size="xl"
                 className="rounded-md border-white bg-transparent px-8 font-black text-white hover:bg-white hover:text-brand-navy"
               >
-                <Link href="/cliente">I&apos;m a Client</Link>
+                <Link href="/cliente">Sou cliente</Link>
               </Button>
             </div>
           </div>

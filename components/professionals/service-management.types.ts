@@ -19,6 +19,12 @@ export type ProfessionalDashboardProfile = {
   total_reviews: number | null;
 };
 
+export type ServiceCategoryOption = {
+  id: string;
+  name: string;
+  icon_url: string | null;
+};
+
 export type ServiceStatus = "Active" | "Draft";
 
 export type ServiceRequestStatus =
@@ -28,21 +34,15 @@ export type ServiceRequestStatus =
   | "CONCLUIDA"
   | "ABORTADA";
 
-export type ServiceCategory =
-  | "Engineering"
-  | "Operations"
-  | "Automation"
-  | "Infrastructure";
-
 export type ServiceCard = {
   id: string;
+  professional_id: string;
   title: string;
-  category: ServiceCategory;
-  fee: string;
-  unit: string;
-  description: string;
-  tag: string;
-  status: ServiceStatus;
+  description: string | null;
+  base_price: number | null;
+  image_url: string | null;
+  is_active: boolean;
+  category: ServiceCategoryOption;
 };
 
 export type ServiceRequestCard = {
@@ -50,6 +50,9 @@ export type ServiceRequestCard = {
   client_id: string;
   client_name: string;
   client_email: string;
+  service_id: string | null;
+  service_title: string | null;
+  service_category_name: string | null;
   created_at: string;
   date_service: string;
   status: ServiceRequestStatus;

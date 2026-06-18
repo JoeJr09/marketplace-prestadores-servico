@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { InputPhone } from "@/components/e/InputPhone";
@@ -42,7 +42,7 @@ export function EditSettingsPanel({
   const [deleteName, setDeleteName] = useState("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    client.avatar_url
+    client.avatar_url,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,7 +85,6 @@ export function EditSettingsPanel({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Preview local imediato
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
     setError(null);
@@ -160,7 +159,7 @@ export function EditSettingsPanel({
 
     if (!canDelete) {
       setError(
-        "Digite seu nome completo exatamente como está no perfil para confirmar a exclusão."
+        "Digite seu nome completo exatamente como está no perfil para confirmar a exclusão.",
       );
       return;
     }
@@ -196,8 +195,8 @@ export function EditSettingsPanel({
                 Dados da conta
               </h2>
               <p className="mt-2 text-sm leading-6 text-text-muted">
-                O padrão mais comum é mostrar um resumo limpo e abrir o
-                formulário completo apenas quando a pessoa decide editar.
+                Visualize um resumo da conta e abra o formulário completo apenas
+                quando quiser editar.
               </p>
             </div>
 
@@ -221,7 +220,7 @@ export function EditSettingsPanel({
                 Campos disponíveis
               </p>
               <p className="mt-3 text-base leading-7 text-text-muted">
-                Nome completo, email, telefone, imagem de perfil e senha.
+                Nome completo, e-mail, telefone, imagem de perfil, bio e senha.
               </p>
             </div>
 
@@ -230,8 +229,8 @@ export function EditSettingsPanel({
                 Exclusão segura
               </p>
               <p className="mt-3 text-base leading-7 text-text-muted">
-                Se algum dia você quiser apagar a conta, será preciso confirmar
-                digitando o nome completo para evitar ações por engano.
+                Para apagar a conta, será preciso confirmar digitando o nome
+                completo e evitar exclusões por engano.
               </p>
             </div>
           </div>
@@ -291,14 +290,12 @@ export function EditSettingsPanel({
             className="mt-8 grid gap-5"
             onSubmit={handleSubmit}
           >
-            {/* Upload de foto */}
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
                 Foto de perfil
               </p>
 
               <div className="flex items-center gap-5">
-                {/* Preview do avatar */}
                 <div className="relative h-20 w-20 shrink-0">
                   {avatarPreview ? (
                     <img
@@ -319,7 +316,6 @@ export function EditSettingsPanel({
                   ) : null}
                 </div>
 
-                {/* Botão de upload */}
                 <div className="space-y-2">
                   <input
                     ref={fileInputRef}
@@ -370,7 +366,7 @@ export function EditSettingsPanel({
                   htmlFor="email"
                   className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle"
                 >
-                  Email
+                  E-mail
                 </label>
                 <Input
                   id="email"

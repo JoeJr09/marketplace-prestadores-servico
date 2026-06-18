@@ -7,17 +7,15 @@ import {
   ClipboardList,
   Clock3,
   MapPin,
+  ReceiptText,
   XCircle,
 } from "lucide-react";
 
-import Footer from "@/components/e/Footer";
-import Header from "@/components/e/Header";
 import { verifyAccessToken } from "@/app/lib/jwt";
 import { getProfessionalSlug } from "@/app/lib/professional-slug";
-import {
-  supabase,
-  supabaseAdmin,
-} from "@/app/lib/supabase";
+import { supabase, supabaseAdmin } from "@/app/lib/supabase";
+import Footer from "@/components/e/Footer";
+import Header from "@/components/e/Header";
 
 type AuthenticatedProfile = {
   id: string;
@@ -38,6 +36,7 @@ type ClientRequestRecord = {
   date_service: string;
   status: string;
   id_professional: string;
+  id_servico: string | null;
 };
 
 type ProfessionalLookup = {
@@ -54,6 +53,19 @@ type ProfessionalLookup = {
       }[];
 };
 
+type ServiceLookup = {
+  id: string;
+  title: string | null;
+  categories:
+    | {
+        name: string | null;
+      }
+    | {
+        name: string | null;
+      }[]
+    | null;
+};
+
 type ClientOrderCard = {
   id: string;
   created_at: string;
@@ -62,11 +74,11 @@ type ClientOrderCard = {
   professional_name: string;
   professional_slug: string | null;
   location: string | null;
+  service_title: string | null;
+  service_category_name: string | null;
 };
 
-const allowedStatuses = new Set<
-  ClientRequestStatus
->([
+const allowedStatuses = new Set<ClientRequestStatus>([
   "PENDENTE",
   "ACEITA",
   "RECUSADA",
@@ -80,17 +92,14 @@ function getDatabaseClient() {
 
 async function getAuthenticatedProfile() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(
-    "sb-access-token",
-  )?.value;
+  const token = cookieStore.get("sb-access-token")?.value;
 
   if (!token) {
     return null;
   }
 
   try {
-    const payload =
-      verifyAccessToken(token);
+    const payload = verifyAccessToken(token);
     const db = getDatabaseClient();
     const { data, error } = await db
       .from("profiles")
@@ -108,18 +117,11 @@ async function getAuthenticatedProfile() {
   }
 }
 
-async function getClientOrders(
-  clientId: string,
-) {
+async function getClientOrders(clientId: string) {
   const db = getDatabaseClient();
-  const {
-    data: requests,
-    error: requestsError,
-  } = await db
+  const { data: requests, error: requestsError } = await db
     .from("calendar")
-    .select(
-      "id, created_at, date_service, status, id_professional",
-    )
+    .select("id, created_at, date_service, status, id_professional, id_servico")
     .eq("id_cliente", clientId)
     .order("created_at", {
       ascending: false,
@@ -132,113 +134,106 @@ async function getClientOrders(
   const professionalIds = Array.from(
     new Set(
       requests
-        .map(
-          (request) =>
-            request.id_professional,
-        )
+        .map((request) => request.id_professional)
         .filter(
-          (
-            professionalId,
-          ): professionalId is string =>
-            typeof professionalId ===
-            "string",
+          (professionalId): professionalId is string =>
+            typeof professionalId === "string",
         ),
     ),
   );
 
-  const professionalsById = new Map<
+  const serviceIds = Array.from(
+    new Set(
+      requests
+        .map((request) => request.id_servico)
+        .filter((serviceId): serviceId is string => typeof serviceId === "string"),
+    ),
+  );
+
+  const professionalsById = new Map<string, ProfessionalLookup>();
+  const servicesById = new Map<
     string,
-    ProfessionalLookup
+    {
+      title: string | null;
+      categoryName: string | null;
+    }
   >();
 
   if (professionalIds.length > 0) {
-    const {
-      data: professionals,
-      error: professionalsError,
-    } = await db
+    const { data: professionals, error: professionalsError } = await db
       .from("professionals")
-      .select(
-        "id, business_name, city, country, profiles!inner(full_name)",
-      )
+      .select("id, business_name, city, country, profiles!inner(full_name)")
       .in("id", professionalIds);
 
-    if (
-      !professionalsError &&
-      professionals
-    ) {
-      (
-        professionals as ProfessionalLookup[]
-      ).forEach((professional) => {
-        professionalsById.set(
-          professional.id,
-          professional,
-        );
+    if (!professionalsError && professionals) {
+      (professionals as ProfessionalLookup[]).forEach((professional) => {
+        professionalsById.set(professional.id, professional);
       });
     }
   }
 
-  return (
-    requests as ClientRequestRecord[]
-  ).map((request) => {
-    const professional =
-      professionalsById.get(
-        request.id_professional,
-      );
-    const profile = Array.isArray(
-      professional?.profiles,
-    )
+  if (serviceIds.length > 0) {
+    const { data: services, error: servicesError } = await db
+      .from("services")
+      .select("id, title, categories(name)")
+      .in("id", serviceIds);
+
+    if (!servicesError && services) {
+      (services as ServiceLookup[]).forEach((service) => {
+        const category = Array.isArray(service.categories)
+          ? service.categories[0]
+          : service.categories;
+
+        servicesById.set(service.id, {
+          title: service.title ?? null,
+          categoryName: category?.name ?? null,
+        });
+      });
+    }
+  }
+
+  return (requests as ClientRequestRecord[]).map((request) => {
+    const professional = professionalsById.get(request.id_professional);
+    const profile = Array.isArray(professional?.profiles)
       ? professional?.profiles[0]
       : professional?.profiles;
-    const status = allowedStatuses.has(
-      request.status as ClientRequestStatus,
-    )
+    const service = request.id_servico
+      ? servicesById.get(request.id_servico)
+      : null;
+    const status = allowedStatuses.has(request.status as ClientRequestStatus)
       ? (request.status as ClientRequestStatus)
       : "PENDENTE";
     const professionalName =
-      professional?.business_name ??
-      profile?.full_name ??
-      "Prestador";
+      professional?.business_name ?? profile?.full_name ?? "Prestador";
 
     return {
       id: request.id,
       created_at: request.created_at,
-      date_service:
-        request.date_service,
+      date_service: request.date_service,
       status,
-      professional_name:
-        professionalName,
-      professional_slug:
-        professional?.business_name
-          ? getProfessionalSlug({
-              business_name:
-                professional.business_name,
-            })
-          : null,
-      location: [
-        professional?.city,
-        professional?.country,
-      ]
-        .filter(Boolean)
-        .join(", ") || null,
+      professional_name: professionalName,
+      professional_slug: professional?.business_name
+        ? getProfessionalSlug({
+            business_name: professional.business_name,
+          })
+        : null,
+      location:
+        [professional?.city, professional?.country].filter(Boolean).join(", ") ||
+        null,
+      service_title: service?.title ?? null,
+      service_category_name: service?.categoryName ?? null,
     } satisfies ClientOrderCard;
   });
 }
 
-function formatDateTime(
-  value: string,
-) {
-  return new Intl.DateTimeFormat(
-    "pt-BR",
-    {
-      dateStyle: "short",
-      timeStyle: "short",
-    },
-  ).format(new Date(value));
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
-function getStatusLabel(
-  status: ClientRequestStatus,
-) {
+function getStatusLabel(status: ClientRequestStatus) {
   if (status === "ACEITA") {
     return "Aceita";
   }
@@ -258,9 +253,7 @@ function getStatusLabel(
   return "Pendente";
 }
 
-function getStatusClasses(
-  status: ClientRequestStatus,
-) {
+function getStatusClasses(status: ClientRequestStatus) {
   if (status === "ACEITA") {
     return "bg-brand-peach text-brand-brown";
   }
@@ -281,37 +274,23 @@ function getStatusClasses(
 }
 
 export default async function ClientePedidosPage() {
-  const authenticatedProfile =
-    await getAuthenticatedProfile();
+  const authenticatedProfile = await getAuthenticatedProfile();
 
   if (!authenticatedProfile) {
-    redirect(
-      "/login?redirect=%2Fcliente%2Fpedidos",
-    );
+    redirect("/login?redirect=%2Fcliente%2Fpedidos");
   }
 
-  if (
-    authenticatedProfile.role !==
-    "client"
-  ) {
+  if (authenticatedProfile.role !== "client") {
     redirect("/prestador");
   }
 
-  const orders = await getClientOrders(
-    authenticatedProfile.id,
-  );
-  const pendingCount = orders.filter(
-    (order) => order.status === "PENDENTE",
-  ).length;
+  const orders = await getClientOrders(authenticatedProfile.id);
+  const pendingCount = orders.filter((order) => order.status === "PENDENTE").length;
   const confirmedCount = orders.filter(
-    (order) =>
-      order.status === "ACEITA" ||
-      order.status === "CONCLUIDA",
+    (order) => order.status === "ACEITA" || order.status === "CONCLUIDA",
   ).length;
   const closedCount = orders.filter(
-    (order) =>
-      order.status === "RECUSADA" ||
-      order.status === "ABORTADA",
+    (order) => order.status === "RECUSADA" || order.status === "ABORTADA",
   ).length;
 
   return (
@@ -330,7 +309,8 @@ export default async function ClientePedidosPage() {
                   Meus pedidos
                 </h1>
                 <p className="mt-4 max-w-2xl text-base leading-8 text-text-muted">
-                  Acompanhe cada solicitacao enviada aos prestadores e veja quais horarios foram aceitos, recusados, concluidos ou abortados.
+                  Acompanhe cada solicitacao enviada aos prestadores e veja quais
+                  horarios foram aceitos, recusados, concluidos ou abortados.
                 </p>
               </div>
 
@@ -380,7 +360,8 @@ export default async function ClientePedidosPage() {
                   Nenhum pedido enviado ainda
                 </h2>
                 <p className="mt-3 text-base leading-8 text-text-muted">
-                  Quando voce solicitar um horario a um prestador, ele aparecera aqui com o status atualizado.
+                  Quando voce solicitar um horario a um prestador, ele aparecera
+                  aqui com o status atualizado.
                 </p>
               </div>
             ) : (
@@ -409,27 +390,36 @@ export default async function ClientePedidosPage() {
                       <span
                         className={[
                           "inline-flex w-max rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em]",
-                          getStatusClasses(
-                            order.status,
-                          ),
+                          getStatusClasses(order.status),
                         ].join(" ")}
                       >
-                        {getStatusLabel(
-                          order.status,
-                        )}
+                        {getStatusLabel(order.status)}
                       </span>
                     </div>
 
-                    <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <div className="mt-5 grid gap-4 md:grid-cols-3">
+                      <div className="rounded-2xl bg-surface-frost p-4">
+                        <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
+                          <ReceiptText className="size-3.5" />
+                          Servico solicitado
+                        </p>
+                        <p className="mt-2 text-lg font-black text-brand-navy">
+                          {order.service_title ?? "Servico nao identificado"}
+                        </p>
+                        {order.service_category_name ? (
+                          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-brown">
+                            {order.service_category_name}
+                          </p>
+                        ) : null}
+                      </div>
+
                       <div className="rounded-2xl bg-surface-frost p-4">
                         <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-text-subtle">
                           <CalendarDays className="size-3.5" />
                           Data do servico
                         </p>
                         <p className="mt-2 text-lg font-black text-brand-navy">
-                          {formatDateTime(
-                            order.date_service,
-                          )}
+                          {formatDateTime(order.date_service)}
                         </p>
                       </div>
 
@@ -439,9 +429,7 @@ export default async function ClientePedidosPage() {
                           Pedido criado em
                         </p>
                         <p className="mt-2 text-lg font-black text-brand-navy">
-                          {formatDateTime(
-                            order.created_at,
-                          )}
+                          {formatDateTime(order.created_at)}
                         </p>
                       </div>
                     </div>
@@ -456,18 +444,14 @@ export default async function ClientePedidosPage() {
                         </Link>
                       ) : null}
 
-                      {order.status ===
-                      "ACEITA" ? (
+                      {order.status === "ACEITA" ? (
                         <span className="inline-flex h-10 items-center gap-2 rounded-md bg-brand-peach px-4 text-sm font-bold text-brand-brown">
                           <CircleCheckBig className="size-4" />
                           Horario confirmado
                         </span>
                       ) : null}
 
-                      {order.status ===
-                        "RECUSADA" ||
-                      order.status ===
-                        "ABORTADA" ? (
+                      {order.status === "RECUSADA" || order.status === "ABORTADA" ? (
                         <span className="inline-flex h-10 items-center gap-2 rounded-md bg-brand-orange/10 px-4 text-sm font-bold text-brand-orange">
                           <XCircle className="size-4" />
                           Solicitacao nao confirmada

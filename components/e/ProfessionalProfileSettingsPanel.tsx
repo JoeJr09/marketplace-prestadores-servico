@@ -287,7 +287,7 @@ export function ProfessionalProfileSettingsPanel({
               htmlFor="email"
               className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle"
             >
-              Email
+              E-mail
             </label>
             <Input
               id="email"
